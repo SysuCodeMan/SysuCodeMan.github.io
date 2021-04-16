@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android源码学习," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OverViewRecyclerView是Android5.0推出的新组件，可以认为是更加灵活强大的ListView，在日常开发中基本上已经取代了ListView成为长列表控件的首选。其继承结构如下：从继承结构可以看到，RecyclerView是ViewGroup的直接子类，这里就是RecyclerView与ListView第一点大不同，ListView和ViewGroup之间隔了两层，其实个人认">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android RecyclerView源码浅析">
+<meta property="og:url" content="http://example.com/2021/04/16/Android-RecyclerView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="OverViewRecyclerView是Android5.0推出的新组件，可以认为是更加灵活强大的ListView，在日常开发中基本上已经取代了ListView成为长列表控件的首选。其继承结构如下：从继承结构可以看到，RecyclerView是ViewGroup的直接子类，这里就是RecyclerView与ListView第一点大不同，ListView和ViewGroup之间隔了两层，其实个人认">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-c382744bd06ca4a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-20937ebf735b9cca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-af28fd79ed1d96b0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-0b8d7170c3e44049.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-bf7a5a266bd563b9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-f9faa327825620a5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-410a68952c1c2acf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-79c3bdf424c8368c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2021-04-16T09:48:41.000Z">
+<meta property="article:modified_time" content="2021-04-16T09:50:25.137Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Android源码学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/5866715-c382744bd06ca4a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/16/Android-RecyclerView源码浅析/"/>
+
+
+
+
+
+  <title>Android RecyclerView源码浅析 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/16/Android-RecyclerView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android RecyclerView源码浅析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-04-16T17:48:41+08:00">
+                2021-04-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="OverView"><a href="#OverView" class="headerlink" title="OverView"></a>OverView</h3><p>RecyclerView是Android5.0推出的新组件，可以认为是更加灵活强大的ListView，在日常开发中基本上已经取代了ListView成为长列表控件的首选。<br>其继承结构如下：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-c382744bd06ca4a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>从继承结构可以看到，RecyclerView是ViewGroup的直接子类，这里就是RecyclerView与ListView第一点大不同，ListView和ViewGroup之间隔了两层，其实个人认为在继承结构上揭露了RecyclerView相比ListView的优点：由于RecyclerView这么简单的继承结构，说明了其主要功能都是通过<strong>组合</strong>来实现的，而ListView是通过<strong>继承</strong>实现的。</p>
+<h3 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h3><p>通常来说，在业务代码中使用RecyclerView，主要有以下几个步骤：</p>
+<ul>
+<li>创建RecyclerView实例</li>
+<li>为RecyclerView设置LayoutManager，LayoutManager是一个抽象类，常用的实现类有LinearLayoutManager</li>
+<li>如有必要，为RecyclerView设置ItemAnimator</li>
+<li>如有必要，为RecyclerView设置ItemDecoration</li>
+<li>继承RecyclerView.Adapter<VH extends ViewHolder>，实现getItemCount()/onCreateViewHolder(ViewGroup parent, int viewType)/onBindViewHolder(VH holder, int position)</li>
+<li>在RecyclerView.Adapter中使用到的VH是ViewHolder的实现类，但ViewHolder虽然是一个抽象类，其中却没有需要我们实现的抽象方法，ViewHolder中关键的成员是itemView，即其承载的视图，可见性为public，可以直接获取</li>
+</ul>
+<h3 id="源码浅析"><a href="#源码浅析" class="headerlink" title="源码浅析"></a>源码浅析</h3><p>这部分跟随RecyclerView使用到的各个类的方法，看下这些关键方法是在何时被调用的</p>
+<h3 id="Adapter"><a href="#Adapter" class="headerlink" title="Adapter"></a>Adapter</h3><ul>
+<li><p>public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)<br>在源码中查找onCreateViewHolder(ViewGroup parent, int viewType)的调用，能得到下图<br><img src="https://upload-images.jianshu.io/upload_images/5866715-20937ebf735b9cca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>内一层是外一层的调用，最终可以看到主要的调用在LinearLayoutManager的onLayoutChildren()；直接的调用方法是在RecyclerView的tryGetViewHolderForPositionByDeadline(int position, boolean dryRun, long deadlineNs)中有这么1段：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (holder == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">long</span> start = getNanoTime();</span><br><span class="line">    <span class="keyword">if</span> (deadlineNs != FOREVER_NS</span><br><span class="line">            &amp;&amp; !mRecyclerPool.willCreateInTime(type, start, deadlineNs)) &#123;</span><br><span class="line">        <span class="comment">// abort - we have a deadline we can&#x27;t meet</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    holder = mAdapter.createViewHolder(RecyclerView.<span class="keyword">this</span>, type);</span><br><span class="line">    <span class="keyword">if</span> (ALLOW_THREAD_GAP_WORK) &#123;</span><br><span class="line">        <span class="comment">// only bother finding nested RV if prefetching</span></span><br><span class="line">        RecyclerView innerView = findNestedRecyclerView(holder.itemView);</span><br><span class="line">        <span class="keyword">if</span> (innerView != <span class="keyword">null</span>) &#123;</span><br><span class="line">            holder.mNestedRecyclerView = <span class="keyword">new</span> WeakReference&lt;&gt;(innerView);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> end = getNanoTime();</span><br><span class="line">    mRecyclerPool.factorInCreateTime(type, end - start);</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">&quot;tryGetViewHolderForPositionByDeadline created new ViewHolder&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>简单来说，就是在layout()过程，如果holder为null，就调用这个方法来创建一个ViewHolder</p>
+</li>
+<li><p>public void onBindViewHolder(RecyclerView.ViewHolder holder, int position)<br>首先在RecyclerView.Adapter的bindViewHolder(VH holder, int position)中有直接调用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">bindViewHolder</span><span class="params">(VH holder, <span class="keyword">int</span> position)</span> </span>&#123;</span><br><span class="line">    holder.mPosition = position;</span><br><span class="line">    <span class="keyword">if</span> (hasStableIds()) &#123;</span><br><span class="line">        holder.mItemId = getItemId(position);</span><br><span class="line">    &#125;</span><br><span class="line">    holder.setFlags(ViewHolder.FLAG_BOUND,</span><br><span class="line">            ViewHolder.FLAG_BOUND | ViewHolder.FLAG_UPDATE | ViewHolder.FLAG_INVALID</span><br><span class="line">                    | ViewHolder.FLAG_ADAPTER_POSITION_UNKNOWN);</span><br><span class="line">    TraceCompat.beginSection(TRACE_BIND_VIEW_TAG);</span><br><span class="line">    onBindViewHolder(holder, position, holder.getUnmodifiedPayloads());</span><br><span class="line">    holder.clearPayload();</span><br><span class="line">    <span class="keyword">final</span> ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();</span><br><span class="line">    <span class="keyword">if</span> (layoutParams <span class="keyword">instanceof</span> RecyclerView.LayoutParams) &#123;</span><br><span class="line">        ((LayoutParams) layoutParams).mInsetsDirty = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    TraceCompat.endSection();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用完之后从其itemView中取出LayoutParams来进行处理<br>然后再源码中查找最终的调用链，结果如下：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-af28fd79ed1d96b0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>调用链中关键的一环是在RecyclerView的View getViewForPosition(int position, boolean dryRun)中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">View <span class="title">getViewForPosition</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">boolean</span> dryRun)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> tryGetViewHolderForPositionByDeadline(position, dryRun, FOREVER_NS).itemView;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>里面先调用了tryGetViewHolderForPositionByDeadline(position, dryRun, FOREVER_NS)方法，在前面分析onCreateViewHolder()的时候已经看到了，这个方法里尝试获取holder，取不到就创建holder，创建后就进行onBindViewHolder()的操作，bind完之后在这里可以看到，返回的是holder.itemView，因此在布局过程中，就是从这里获得了正确的itemView</p>
+</li>
+<li><p>int getItemCount()<br>这个方法的调用，在源码里看都是直接调用<br><img src="https://upload-images.jianshu.io/upload_images/5866715-0b8d7170c3e44049.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</li>
+<li><p>int getItemViewType(int position)<br>这个方法在源码中的被调用位置主要是RecyclerView的tryGetViewHolderForPositionByDeadline()函数，这个函数在上面也已经出现过了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> type = mAdapter.getItemViewType(offsetPosition);</span><br><span class="line"><span class="comment">// 2) Find from scrap/cache via stable ids, if exists</span></span><br><span class="line"><span class="keyword">if</span> (mAdapter.hasStableIds()) &#123;</span><br><span class="line">    holder = getScrapOrCachedViewForId(mAdapter.getItemId(offsetPosition),</span><br><span class="line">            type, dryRun);</span><br><span class="line">    <span class="keyword">if</span> (holder != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// update position</span></span><br><span class="line">        holder.mPosition = offsetPosition;</span><br><span class="line">        fromScrapOrHiddenOrCache = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过这个方法拿到的type，就是在onCreateViewHolder()/onBindViewHolder()函数中的入参type</p>
+</li>
+</ul>
+<h3 id="LayoutManager"><a href="#LayoutManager" class="headerlink" title="LayoutManager"></a>LayoutManager</h3><ul>
+<li>public abstract LayoutParams generateDefaultLayoutParams();<br>查找源码，这个方法被调用的位置为RecyclerView的同名函数中：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> ViewGroup.<span class="function">LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mLayout == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;RecyclerView has no LayoutManager&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> mLayout.generateDefaultLayoutParams();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li>public void onLayoutChildren(Recycler recycler, State state)<br>这个方法本身并不是abstract函数，但在LayoutManager中必须重写：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLayoutChildren</span><span class="params">(Recycler recycler, State state)</span> </span>&#123;</span><br><span class="line">            Log.e(TAG, <span class="string">&quot;You must override onLayoutChildren(Recycler recycler, State state) &quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+在源码中查找其调用，可以看到被调用的地方主要有两处：<br>首先是RecyclerView的dispatchLayoutStep1()函数<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dispatchLayoutStep1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mState.assertLayoutStep(State.STEP_START);</span><br><span class="line">    mState.mIsMeasuring = <span class="keyword">false</span>;</span><br><span class="line">    eatRequestLayout();</span><br><span class="line">    mViewInfoStore.clear();</span><br><span class="line">    onEnterLayoutOrScroll();</span><br><span class="line">    processAdapterUpdatesAndSetAnimationFlags();</span><br><span class="line">    saveFocusInfo();</span><br><span class="line">    mState.mTrackOldChangeHolders = mState.mRunSimpleAnimations &amp;&amp; mItemsChanged;</span><br><span class="line">    mItemsAddedOrRemoved = mItemsChanged = <span class="keyword">false</span>;</span><br><span class="line">    mState.mInPreLayout = mState.mRunPredictiveAnimations;</span><br><span class="line">    mState.mItemCount = mAdapter.getItemCount();</span><br><span class="line">    findMinMaxChildLayoutPositions(mMinMaxLayoutPositions);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mState.mRunSimpleAnimations) &#123;</span><br><span class="line">        <span class="comment">// Step 0: Find out where all non-removed items are, pre-layout</span></span><br><span class="line">        <span class="keyword">int</span> count = mChildHelper.getChildCount();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; ++i) &#123;</span><br><span class="line">            <span class="keyword">final</span> ViewHolder holder = getChildViewHolderInt(mChildHelper.getChildAt(i));</span><br><span class="line">            <span class="keyword">if</span> (holder.shouldIgnore() || (holder.isInvalid() &amp;&amp; !mAdapter.hasStableIds())) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">final</span> ItemHolderInfo animationInfo = mItemAnimator</span><br><span class="line">                    .recordPreLayoutInformation(mState, holder,</span><br><span class="line">                            ItemAnimator.buildAdapterChangeFlagsForAnimations(holder),</span><br><span class="line">                            holder.getUnmodifiedPayloads());</span><br><span class="line">            mViewInfoStore.addToPreLayout(holder, animationInfo);</span><br><span class="line">            <span class="keyword">if</span> (mState.mTrackOldChangeHolders &amp;&amp; holder.isUpdated() &amp;&amp; !holder.isRemoved()</span><br><span class="line">                    &amp;&amp; !holder.shouldIgnore() &amp;&amp; !holder.isInvalid()) &#123;</span><br><span class="line">                <span class="keyword">long</span> key = getChangedHolderKey(holder);</span><br><span class="line">                <span class="comment">// This is NOT the only place where a ViewHolder is added to old change holders</span></span><br><span class="line">                <span class="comment">// list. There is another case where:</span></span><br><span class="line">                <span class="comment">//    * A VH is currently hidden but not deleted</span></span><br><span class="line">                <span class="comment">//    * The hidden item is changed in the adapter</span></span><br><span class="line">                <span class="comment">//    * Layout manager decides to layout the item in the pre-Layout pass (step1)</span></span><br><span class="line">                <span class="comment">// When this case is detected, RV will un-hide that view and add to the old</span></span><br><span class="line">                <span class="comment">// change holders list.</span></span><br><span class="line">                mViewInfoStore.addToOldChangeHolders(key, holder);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mState.mRunPredictiveAnimations) &#123;</span><br><span class="line">        <span class="comment">// Step 1: run prelayout: This will use the old positions of items. The layout manager</span></span><br><span class="line">        <span class="comment">// is expected to layout everything, even removed items (though not to add removed</span></span><br><span class="line">        <span class="comment">// items back to the container). This gives the pre-layout position of APPEARING views</span></span><br><span class="line">        <span class="comment">// which come into existence as part of the real layout.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// Save old positions so that LayoutManager can run its mapping logic.</span></span><br><span class="line">        saveOldPositions();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> didStructureChange = mState.mStructureChanged;</span><br><span class="line">        mState.mStructureChanged = <span class="keyword">false</span>;</span><br><span class="line">        <span class="comment">// temporarily disable flag because we are asking for previous layout</span></span><br><span class="line">        mLayout.onLayoutChildren(mRecycler, mState);</span><br><span class="line">        mState.mStructureChanged = didStructureChange;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mChildHelper.getChildCount(); ++i) &#123;</span><br><span class="line">            <span class="keyword">final</span> View child = mChildHelper.getChildAt(i);</span><br><span class="line">            <span class="keyword">final</span> ViewHolder viewHolder = getChildViewHolderInt(child);</span><br><span class="line">            <span class="keyword">if</span> (viewHolder.shouldIgnore()) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!mViewInfoStore.isInPreLayout(viewHolder)) &#123;</span><br><span class="line">                <span class="keyword">int</span> flags = ItemAnimator.buildAdapterChangeFlagsForAnimations(viewHolder);</span><br><span class="line">                <span class="keyword">boolean</span> wasHidden = viewHolder</span><br><span class="line">                        .hasAnyOfTheFlags(ViewHolder.FLAG_BOUNCED_FROM_HIDDEN_LIST);</span><br><span class="line">                <span class="keyword">if</span> (!wasHidden) &#123;</span><br><span class="line">                    flags |= ItemAnimator.FLAG_APPEARED_IN_PRE_LAYOUT;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">final</span> ItemHolderInfo animationInfo = mItemAnimator.recordPreLayoutInformation(</span><br><span class="line">                        mState, viewHolder, flags, viewHolder.getUnmodifiedPayloads());</span><br><span class="line">                <span class="keyword">if</span> (wasHidden) &#123;</span><br><span class="line">                    recordAnimationInfoIfBouncedHiddenView(viewHolder, animationInfo);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    mViewInfoStore.addToAppearedInPreLayoutHolders(viewHolder, animationInfo);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// we don&#x27;t process disappearing list because they may re-appear in post layout pass.</span></span><br><span class="line">        clearOldPositions();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        clearOldPositions();</span><br><span class="line">    &#125;</span><br><span class="line">    onExitLayoutOrScroll();</span><br><span class="line">    resumeRequestLayout(<span class="keyword">false</span>);</span><br><span class="line">    mState.mLayoutStep = State.STEP_LAYOUT;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+其次是dispatchLayoutStep2()中：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dispatchLayoutStep2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    eatRequestLayout();</span><br><span class="line">    onEnterLayoutOrScroll();</span><br><span class="line">    mState.assertLayoutStep(State.STEP_LAYOUT | State.STEP_ANIMATIONS);</span><br><span class="line">    mAdapterHelper.consumeUpdatesInOnePass();</span><br><span class="line">    mState.mItemCount = mAdapter.getItemCount();</span><br><span class="line">    mState.mDeletedInvisibleItemCountSincePreviousLayout = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Step 2: Run layout</span></span><br><span class="line">    mState.mInPreLayout = <span class="keyword">false</span>;</span><br><span class="line">    mLayout.onLayoutChildren(mRecycler, mState);</span><br><span class="line"></span><br><span class="line">    mState.mStructureChanged = <span class="keyword">false</span>;</span><br><span class="line">    mPendingSavedState = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// onLayoutChildren may have caused client code to disable item animations; re-check</span></span><br><span class="line">    mState.mRunSimpleAnimations = mState.mRunSimpleAnimations &amp;&amp; mItemAnimator != <span class="keyword">null</span>;</span><br><span class="line">    mState.mLayoutStep = State.STEP_ANIMATIONS;</span><br><span class="line">    onExitLayoutOrScroll();</span><br><span class="line">    resumeRequestLayout(<span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="ItemDecoration"><a href="#ItemDecoration" class="headerlink" title="ItemDecoration"></a>ItemDecoration</h3><ul>
+<li><p>onDraw(Canvas c, RecyclerView parent, RecyclerView.State state)<br>这个函数作用在于绘制分割线，在源码中被调用的地方在RecyclerView中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDraw</span><span class="params">(Canvas c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onDraw(c);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> count = mItemDecorations.size();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        mItemDecorations.get(i).onDraw(c, <span class="keyword">this</span>, mState);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实就是RecyclerView的onDraw()函数中进行了分割线的绘制</p>
+</li>
+<li><p>public void getItemOffsets(Rect outRect, View view, RecyclerView parent, State state)<br>这个函数是，在每一项itemView绘制的时候，通过控制outRect的left/top/right/bottom值，来确定itemView四周留出来的范围，效果类似于padding或margin<br>在源码中被调用的地方有：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-bf7a5a266bd563b9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</li>
+</ul>
+<p>可以看到，主要是和measure有关的函数，很容易理解，因为就是在measure过程确定一个itemView占据多少空间</p>
+<h3 id="ItemAnimator"><a href="#ItemAnimator" class="headerlink" title="ItemAnimator"></a>ItemAnimator</h3><p>ItemAnimator主要用于对item的插入、修改、删除动画处理主要有animateApprearance/animateDisappearance/animateChange/animatePersistence这几个在对应动作的函数</p>
+<ul>
+<li>public abstract boolean animateAppearance(@NonNull ViewHolder viewHolder, @Nullable ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo);<br>在源码中查找animateAppearance的调用链为：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-f9faa327825620a5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>最终又是在熟悉的dispatchLayoutStep3()中被调用<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Step 4: Process view info lists and trigger animations</span></span><br><span class="line">mViewInfoStore.process(mViewInfoProcessCallback);</span><br></pre></td></tr></table></figure>
+但这一行并不是很能看出怎么就调用了animateAppearance，看下再上一步的调用：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-410a68952c1c2acf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+</ul>
+<p>可以看到在调用process()函数的时候，是有根据record.flags来判断应该执行的是哪个处理</p>
+<ul>
+<li><p> public abstract boolean animateDisappearance(@NonNull ViewHolder viewHolder, @NonNull ItemHolderInfo preLayoutInfo, @Nullable ItemHolderInfo postLayoutInfo)<br>在源码中查找其调用位置：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-79c3bdf424c8368c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>可以看到跟animateAppearance一样，最终都是被dispatchLayoutStep3()调用</p>
+</li>
+<li><p>public abstract boolean animateChange(@NonNull ViewHolder oldHolder,</p>
+<pre><code>          @NonNull ViewHolder newHolder,
+          @NonNull ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo)
+</code></pre>
+<p>这个函数的调用链和上述一致，就不重复贴图了</p>
+</li>
+</ul>
+<ul>
+<li>public abstract boolean animatePersistence(@NonNull ViewHolder viewHolder,<pre><code>          @NonNull ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo);
+</code></pre>
+这个函数的调用链依然和上述一致</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="tag"># Android源码学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/16/Android-ListView%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="next" title="Android ListView源码学习">
+                <i class="fa fa-chevron-left"></i> Android ListView源码学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/04/16/Android-ImageView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/" rel="prev" title="Android ImageView源码浅析">
+                Android ImageView源码浅析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#OverView"><span class="nav-number">1.</span> <span class="nav-text">OverView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">源码浅析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Adapter"><span class="nav-number">4.</span> <span class="nav-text">Adapter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LayoutManager"><span class="nav-number">5.</span> <span class="nav-text">LayoutManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ItemDecoration"><span class="nav-number">6.</span> <span class="nav-text">ItemDecoration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ItemAnimator"><span class="nav-number">7.</span> <span class="nav-text">ItemAnimator</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

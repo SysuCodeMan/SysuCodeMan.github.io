@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android源码学习," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OverView官方文档中关于ImageView的介绍是：Displays image resources, for example Bitmap or Drawable resources. ImageView is also commonly used to apply tints to an image and handle image scaling.即用来展示图像资源的控件。其继承层次为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android ImageView源码浅析">
+<meta property="og:url" content="http://example.com/2021/04/16/Android-ImageView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="OverView官方文档中关于ImageView的介绍是：Displays image resources, for example Bitmap or Drawable resources. ImageView is also commonly used to apply tints to an image and handle image scaling.即用来展示图像资源的控件。其继承层次为">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-cc8fc944cabf6d5d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2021-04-16T09:50:43.000Z">
+<meta property="article:modified_time" content="2021-04-16T09:52:16.923Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Android源码学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/5866715-cc8fc944cabf6d5d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/16/Android-ImageView源码浅析/"/>
+
+
+
+
+
+  <title>Android ImageView源码浅析 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/16/Android-ImageView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android ImageView源码浅析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-04-16T17:50:43+08:00">
+                2021-04-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="OverView"><a href="#OverView" class="headerlink" title="OverView"></a>OverView</h3><p>官方文档中关于ImageView的介绍是：<br>Displays image resources, for example Bitmap or Drawable resources. ImageView is also commonly used to apply tints to an image and handle image scaling.<br>即用来展示图像资源的控件。<br>其继承层次为<br><img src="https://upload-images.jianshu.io/upload_images/5866715-cc8fc944cabf6d5d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="ImageView-ScaleType"><a href="#ImageView-ScaleType" class="headerlink" title="ImageView.ScaleType"></a>ImageView.ScaleType</h3><p>在ImageView中有一个内部枚举类ScaleType，用来控制图像和ImageView的尺寸不一致时的拉伸规则：<br>| 枚举值 | 含义<br>| —-    | —- |<br>| CENTER| 不拉伸图像，居中置于ImageView中|<br>|CENTER_CROP|等比例拉伸图像，直至长和宽都等于或者大于ImageView的对应边，然后居中置于ImageView，（如果本来的长宽就都大于ImageView的对应边，则不拉伸）|<br>|CENTER_INSIDE|等比例拉伸图像，直至长和宽都等于或者小于ImageView的对应边，然后居中置于ImageView(如果本来的长宽就都小于ImageView的对应边，则不拉伸)|<br>|FILL_XY|图像的长和宽都拉伸到和ImageView一致，以充满ImageView，这种情况下会改变图像的比例|<br>|FILL_CENTER|等比例拉伸图片，直到某一边刚好和ImageView一致，然后居中置于ImageView|<br>|FILL_START|等比例拉伸图片，直到某一边刚好和ImageView一致，然后靠开始位置置于ImageView|<br>|FILL_END|等比例拉伸图片，直到某一边刚好和ImageView一致，然后靠结束位置置于ImageView|<br>|MATRIX|从左上角开始平铺图像|</p>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ImageView</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">        initImageView();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageView</span><span class="params">(Context context, <span class="meta">@Nullable</span> AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(context, attrs, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageView</span><span class="params">(Context context, <span class="meta">@Nullable</span> AttributeSet attrs, <span class="keyword">int</span> defStyleAttr)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(context, attrs, defStyleAttr, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageView</span><span class="params">(Context context, <span class="meta">@Nullable</span> AttributeSet attrs, <span class="keyword">int</span> defStyleAttr,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">int</span> defStyleRes)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs, defStyleAttr, defStyleRes);</span><br><span class="line"></span><br><span class="line">        initImageView();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (getImportantForAutofill() == IMPORTANT_FOR_AUTOFILL_AUTO) &#123;</span><br><span class="line">            setImportantForAutofill(IMPORTANT_FOR_AUTOFILL_NO);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> TypedArray a = context.obtainStyledAttributes(</span><br><span class="line">                attrs, R.styleable.ImageView, defStyleAttr, defStyleRes);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> Drawable d = a.getDrawable(R.styleable.ImageView_src);</span><br><span class="line">        <span class="keyword">if</span> (d != <span class="keyword">null</span>) &#123;</span><br><span class="line">            setImageDrawable(d);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mBaselineAlignBottom = a.getBoolean(R.styleable.ImageView_baselineAlignBottom, <span class="keyword">false</span>);</span><br><span class="line">        mBaseline = a.getDimensionPixelSize(R.styleable.ImageView_baseline, -<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        setAdjustViewBounds(a.getBoolean(R.styleable.ImageView_adjustViewBounds, <span class="keyword">false</span>));</span><br><span class="line">        setMaxWidth(a.getDimensionPixelSize(R.styleable.ImageView_maxWidth, Integer.MAX_VALUE));</span><br><span class="line">        setMaxHeight(a.getDimensionPixelSize(R.styleable.ImageView_maxHeight, Integer.MAX_VALUE));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> index = a.getInt(R.styleable.ImageView_scaleType, -<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            setScaleType(sScaleTypeArray[index]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (a.hasValue(R.styleable.ImageView_tint)) &#123;</span><br><span class="line">            mDrawableTintList = a.getColorStateList(R.styleable.ImageView_tint);</span><br><span class="line">            mHasDrawableTint = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">            mDrawableTintMode = PorterDuff.Mode.SRC_ATOP;</span><br><span class="line">            mHasDrawableTintMode = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (a.hasValue(R.styleable.ImageView_tintMode)) &#123;</span><br><span class="line">            mDrawableTintMode = Drawable.parseTintMode(a.getInt(</span><br><span class="line">                    R.styleable.ImageView_tintMode, -<span class="number">1</span>), mDrawableTintMode);</span><br><span class="line">            mHasDrawableTintMode = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        applyImageTint();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> alpha = a.getInt(R.styleable.ImageView_drawableAlpha, <span class="number">255</span>);</span><br><span class="line">        <span class="keyword">if</span> (alpha != <span class="number">255</span>) &#123;</span><br><span class="line">            setImageAlpha(alpha);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mCropToPadding = a.getBoolean(</span><br><span class="line">                R.styleable.ImageView_cropToPadding, <span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">        a.recycle();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>View的构造函数的写法都比较模板化，4个构造函数，2参数和3参数最终调用到的是4参数的构造函数，4参数的构造函数从xml中解析出各个属性也和其他View的构造函数是相同套路<br>单参数和4参数的构造函数，主要的工作都是调用了initImageView()函数<br>看下initImageView()函数的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initImageView</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     mMatrix = <span class="keyword">new</span> Matrix();</span><br><span class="line">     mScaleType = ScaleType.FIT_CENTER;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (!sCompatDone) &#123;</span><br><span class="line">         <span class="keyword">final</span> <span class="keyword">int</span> targetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;</span><br><span class="line">         sCompatAdjustViewBounds = targetSdkVersion &lt;= Build.VERSION_CODES.JELLY_BEAN_MR1;</span><br><span class="line">         sCompatUseCorrectStreamDensity = targetSdkVersion &gt; Build.VERSION_CODES.M;</span><br><span class="line">         sCompatDrawableVisibilityDispatch = targetSdkVersion &lt; Build.VERSION_CODES.N;</span><br><span class="line">         sCompatDone = <span class="keyword">true</span>;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>initImageView()函数也很简单，初始化了一个mMatrix变量，将mScaleType设置成默认的ScaleType.FIT_CENTER（后面展开说下ScaleType这个枚举类）<br>接下来看下4参数中调用的setImageDrawable(Drawable d)的调用，因为在实际使用中，ImageView的最关键就在于把图像展示出来</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setImageDrawable</span><span class="params">(<span class="meta">@Nullable</span> Drawable drawable)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mDrawable != drawable) &#123;</span><br><span class="line">        mResource = <span class="number">0</span>;</span><br><span class="line">        mUri = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> oldWidth = mDrawableWidth;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> oldHeight = mDrawableHeight;</span><br><span class="line"></span><br><span class="line">        updateDrawable(drawable);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (oldWidth != mDrawableWidth || oldHeight != mDrawableHeight) &#123;</span><br><span class="line">            requestLayout();</span><br><span class="line">        &#125;</span><br><span class="line">        invalidate();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要逻辑在updateDrawable(Drawable d)里面</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateDrawable</span><span class="params">(Drawable d)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (d != mRecycleableBitmapDrawable &amp;&amp; mRecycleableBitmapDrawable != <span class="keyword">null</span>) &#123;</span><br><span class="line">        mRecycleableBitmapDrawable.setBitmap(<span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> sameDrawable = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDrawable != <span class="keyword">null</span>) &#123;</span><br><span class="line">        sameDrawable = mDrawable == d;</span><br><span class="line">        mDrawable.setCallback(<span class="keyword">null</span>);</span><br><span class="line">        unscheduleDrawable(mDrawable);</span><br><span class="line">        <span class="keyword">if</span> (!sCompatDrawableVisibilityDispatch &amp;&amp; !sameDrawable &amp;&amp; isAttachedToWindow()) &#123;</span><br><span class="line">            mDrawable.setVisible(<span class="keyword">false</span>, <span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mDrawable = d;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (d != <span class="keyword">null</span>) &#123;</span><br><span class="line">        d.setCallback(<span class="keyword">this</span>);</span><br><span class="line">        d.setLayoutDirection(getLayoutDirection());</span><br><span class="line">        <span class="keyword">if</span> (d.isStateful()) &#123;</span><br><span class="line">            d.setState(getDrawableState());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!sameDrawable || sCompatDrawableVisibilityDispatch) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">boolean</span> visible = sCompatDrawableVisibilityDispatch</span><br><span class="line">                    ? getVisibility() == VISIBLE</span><br><span class="line">                    : isAttachedToWindow() &amp;&amp; getWindowVisibility() == VISIBLE &amp;&amp; isShown();</span><br><span class="line">            d.setVisible(visible, <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        d.setLevel(mLevel);</span><br><span class="line">        mDrawableWidth = d.getIntrinsicWidth();</span><br><span class="line">        mDrawableHeight = d.getIntrinsicHeight();</span><br><span class="line">        applyImageTint();</span><br><span class="line">        applyColorMod();</span><br><span class="line"></span><br><span class="line">        configureBounds();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        mDrawableWidth = mDrawableHeight = -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中的applyImageTint()和applyColorMod()函数的作用是设置着色、颜色相关的属性，比较关键的函数调用是configureBounds()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">configureBounds</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mDrawable == <span class="keyword">null</span> || !mHaveFrame) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> dwidth = mDrawableWidth;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> dheight = mDrawableHeight;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> vwidth = getWidth() - mPaddingLeft - mPaddingRight;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> vheight = getHeight() - mPaddingTop - mPaddingBottom;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> fits = (dwidth &lt; <span class="number">0</span> || vwidth == dwidth)</span><br><span class="line">            &amp;&amp; (dheight &lt; <span class="number">0</span> || vheight == dheight);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (dwidth &lt;= <span class="number">0</span> || dheight &lt;= <span class="number">0</span> || ScaleType.FIT_XY == mScaleType) &#123;</span><br><span class="line">        <span class="comment">/* If the drawable has no intrinsic size, or we&#x27;re told to</span></span><br><span class="line"><span class="comment">            scaletofit, then we just fill our entire view.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        mDrawable.setBounds(<span class="number">0</span>, <span class="number">0</span>, vwidth, vheight);</span><br><span class="line">        mDrawMatrix = <span class="keyword">null</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// We need to do the scaling ourself, so have the drawable</span></span><br><span class="line">        <span class="comment">// use its native size.</span></span><br><span class="line">        mDrawable.setBounds(<span class="number">0</span>, <span class="number">0</span>, dwidth, dheight);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (ScaleType.MATRIX == mScaleType) &#123;</span><br><span class="line">            <span class="comment">// Use the specified matrix as-is.</span></span><br><span class="line">            <span class="keyword">if</span> (mMatrix.isIdentity()) &#123;</span><br><span class="line">                mDrawMatrix = <span class="keyword">null</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                mDrawMatrix = mMatrix;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (fits) &#123;</span><br><span class="line">            <span class="comment">// The bitmap fits exactly, no transform needed.</span></span><br><span class="line">            mDrawMatrix = <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ScaleType.CENTER == mScaleType) &#123;</span><br><span class="line">            <span class="comment">// Center bitmap in view, no scaling.</span></span><br><span class="line">            mDrawMatrix = mMatrix;</span><br><span class="line">            mDrawMatrix.setTranslate(Math.round((vwidth - dwidth) * <span class="number">0.5f</span>),</span><br><span class="line">                                     Math.round((vheight - dheight) * <span class="number">0.5f</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ScaleType.CENTER_CROP == mScaleType) &#123;</span><br><span class="line">            mDrawMatrix = mMatrix;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">float</span> scale;</span><br><span class="line">            <span class="keyword">float</span> dx = <span class="number">0</span>, dy = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (dwidth * vheight &gt; vwidth * dheight) &#123;</span><br><span class="line">                scale = (<span class="keyword">float</span>) vheight / (<span class="keyword">float</span>) dheight;</span><br><span class="line">                dx = (vwidth - dwidth * scale) * <span class="number">0.5f</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                scale = (<span class="keyword">float</span>) vwidth / (<span class="keyword">float</span>) dwidth;</span><br><span class="line">                dy = (vheight - dheight * scale) * <span class="number">0.5f</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            mDrawMatrix.setScale(scale, scale);</span><br><span class="line">            mDrawMatrix.postTranslate(Math.round(dx), Math.round(dy));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ScaleType.CENTER_INSIDE == mScaleType) &#123;</span><br><span class="line">            mDrawMatrix = mMatrix;</span><br><span class="line">            <span class="keyword">float</span> scale;</span><br><span class="line">            <span class="keyword">float</span> dx;</span><br><span class="line">            <span class="keyword">float</span> dy;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (dwidth &lt;= vwidth &amp;&amp; dheight &lt;= vheight) &#123;</span><br><span class="line">                scale = <span class="number">1.0f</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                scale = Math.min((<span class="keyword">float</span>) vwidth / (<span class="keyword">float</span>) dwidth,</span><br><span class="line">                        (<span class="keyword">float</span>) vheight / (<span class="keyword">float</span>) dheight);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            dx = Math.round((vwidth - dwidth * scale) * <span class="number">0.5f</span>);</span><br><span class="line">            dy = Math.round((vheight - dheight * scale) * <span class="number">0.5f</span>);</span><br><span class="line"></span><br><span class="line">            mDrawMatrix.setScale(scale, scale);</span><br><span class="line">            mDrawMatrix.postTranslate(dx, dy);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Generate the required transform.</span></span><br><span class="line">            mTempSrc.set(<span class="number">0</span>, <span class="number">0</span>, dwidth, dheight);</span><br><span class="line">            mTempDst.set(<span class="number">0</span>, <span class="number">0</span>, vwidth, vheight);</span><br><span class="line"></span><br><span class="line">            mDrawMatrix = mMatrix;</span><br><span class="line">            mDrawMatrix.setRectToRect(mTempSrc, mTempDst, scaleTypeToScaleToFit(mScaleType));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>函数的主要部分是一大堆的if条件对ScaleType的判断，对相应的ScaleType进行图像的矩阵Matrix处理</p>
+<h3 id="onMeasure"><a href="#onMeasure" class="headerlink" title="onMeasure()"></a>onMeasure()</h3><p>看完构造函数，接下来开始看绘制相关的内容，首先是第一阶段的onMeasure()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    resolveUri();</span><br><span class="line">    <span class="keyword">int</span> w;</span><br><span class="line">    <span class="keyword">int</span> h;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Desired aspect ratio of the view&#x27;s contents (not including padding)</span></span><br><span class="line">    <span class="keyword">float</span> desiredAspect = <span class="number">0.0f</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// We are allowed to change the view&#x27;s width</span></span><br><span class="line">    <span class="keyword">boolean</span> resizeWidth = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// We are allowed to change the view&#x27;s height</span></span><br><span class="line">    <span class="keyword">boolean</span> resizeHeight = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> widthSpecMode = MeasureSpec.getMode(widthMeasureSpec);</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> heightSpecMode = MeasureSpec.getMode(heightMeasureSpec);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDrawable == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// If no drawable, its intrinsic size is 0.</span></span><br><span class="line">        mDrawableWidth = -<span class="number">1</span>;</span><br><span class="line">        mDrawableHeight = -<span class="number">1</span>;</span><br><span class="line">        w = h = <span class="number">0</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        w = mDrawableWidth;</span><br><span class="line">        h = mDrawableHeight;</span><br><span class="line">        <span class="keyword">if</span> (w &lt;= <span class="number">0</span>) w = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (h &lt;= <span class="number">0</span>) h = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// We are supposed to adjust view bounds to match the aspect</span></span><br><span class="line">        <span class="comment">// ratio of our drawable. See if that is possible.</span></span><br><span class="line">        <span class="keyword">if</span> (mAdjustViewBounds) &#123;</span><br><span class="line">            resizeWidth = widthSpecMode != MeasureSpec.EXACTLY;</span><br><span class="line">            resizeHeight = heightSpecMode != MeasureSpec.EXACTLY;</span><br><span class="line"></span><br><span class="line">            desiredAspect = (<span class="keyword">float</span>) w / (<span class="keyword">float</span>) h;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> pleft = mPaddingLeft;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> pright = mPaddingRight;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> ptop = mPaddingTop;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> pbottom = mPaddingBottom;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> widthSize;</span><br><span class="line">    <span class="keyword">int</span> heightSize;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (resizeWidth || resizeHeight) &#123;</span><br><span class="line">        <span class="comment">/* If we get here, it means we want to resize to match the</span></span><br><span class="line"><span class="comment">            drawables aspect ratio, and we have the freedom to change at</span></span><br><span class="line"><span class="comment">            least one dimension.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// Get the max possible width given our constraints</span></span><br><span class="line">        widthSize = resolveAdjustedSize(w + pleft + pright, mMaxWidth, widthMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Get the max possible height given our constraints</span></span><br><span class="line">        heightSize = resolveAdjustedSize(h + ptop + pbottom, mMaxHeight, heightMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (desiredAspect != <span class="number">0.0f</span>) &#123;</span><br><span class="line">            <span class="comment">// See what our actual aspect ratio is</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">float</span> actualAspect = (<span class="keyword">float</span>)(widthSize - pleft - pright) /</span><br><span class="line">                                    (heightSize - ptop - pbottom);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (Math.abs(actualAspect - desiredAspect) &gt; <span class="number">0.0000001</span>) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">boolean</span> done = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Try adjusting width to be proportional to height</span></span><br><span class="line">                <span class="keyword">if</span> (resizeWidth) &#123;</span><br><span class="line">                    <span class="keyword">int</span> newWidth = (<span class="keyword">int</span>)(desiredAspect * (heightSize - ptop - pbottom)) +</span><br><span class="line">                            pleft + pright;</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// Allow the width to outgrow its original estimate if height is fixed.</span></span><br><span class="line">                    <span class="keyword">if</span> (!resizeHeight &amp;&amp; !sCompatAdjustViewBounds) &#123;</span><br><span class="line">                        widthSize = resolveAdjustedSize(newWidth, mMaxWidth, widthMeasureSpec);</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (newWidth &lt;= widthSize) &#123;</span><br><span class="line">                        widthSize = newWidth;</span><br><span class="line">                        done = <span class="keyword">true</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Try adjusting height to be proportional to width</span></span><br><span class="line">                <span class="keyword">if</span> (!done &amp;&amp; resizeHeight) &#123;</span><br><span class="line">                    <span class="keyword">int</span> newHeight = (<span class="keyword">int</span>)((widthSize - pleft - pright) / desiredAspect) +</span><br><span class="line">                            ptop + pbottom;</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// Allow the height to outgrow its original estimate if width is fixed.</span></span><br><span class="line">                    <span class="keyword">if</span> (!resizeWidth &amp;&amp; !sCompatAdjustViewBounds) &#123;</span><br><span class="line">                        heightSize = resolveAdjustedSize(newHeight, mMaxHeight,</span><br><span class="line">                                heightMeasureSpec);</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (newHeight &lt;= heightSize) &#123;</span><br><span class="line">                        heightSize = newHeight;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/* We are either don&#x27;t want to preserve the drawables aspect ratio,</span></span><br><span class="line"><span class="comment">           or we are not allowed to change view dimensions. Just measure in</span></span><br><span class="line"><span class="comment">           the normal way.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        w += pleft + pright;</span><br><span class="line">        h += ptop + pbottom;</span><br><span class="line"></span><br><span class="line">        w = Math.max(w, getSuggestedMinimumWidth());</span><br><span class="line">        h = Math.max(h, getSuggestedMinimumHeight());</span><br><span class="line"></span><br><span class="line">        widthSize = resolveSizeAndState(w, widthMeasureSpec, <span class="number">0</span>);</span><br><span class="line">        heightSize = resolveSizeAndState(h, heightMeasureSpec, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    setMeasuredDimension(widthSize, heightSize);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先会调用一次 resolveUri()，这个函数的作用是，确保在进行onMeasure()时已经有mDrawble，resolveUri()会在未设置mDrawble的情况下通过Uri来获取Drawable</li>
+<li>通过mDrawable的宽高来设置w和h</li>
+<li>默认情况下resizeWidth/resizeHeight取值为false，这样只会走最下面的一段else分支，w/h加上对应的padding，然后通过resolveSizeAndState产生相应的<br>MeasureSpec</li>
+<li>假如resizeWidth/resizeHeight为true，会走到中间的if代码块中，这个代码块的作用是，根据比例规则重算宽高</li>
+</ul>
+<h3 id="onLayout"><a href="#onLayout" class="headerlink" title="onLayout()"></a>onLayout()</h3><p>因为ImageView只是普通View的子类，因此没有重写onLayout()</p>
+<h3 id="onDraw"><a href="#onDraw" class="headerlink" title="onDraw()"></a>onDraw()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDraw</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onDraw(canvas);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDrawable == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>; <span class="comment">// couldn&#x27;t resolve the URI</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDrawableWidth == <span class="number">0</span> || mDrawableHeight == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;     <span class="comment">// nothing to draw (empty bounds)</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDrawMatrix == <span class="keyword">null</span> &amp;&amp; mPaddingTop == <span class="number">0</span> &amp;&amp; mPaddingLeft == <span class="number">0</span>) &#123;</span><br><span class="line">        mDrawable.draw(canvas);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> saveCount = canvas.getSaveCount();</span><br><span class="line">        canvas.save();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mCropToPadding) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> scrollX = mScrollX;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> scrollY = mScrollY;</span><br><span class="line">            canvas.clipRect(scrollX + mPaddingLeft, scrollY + mPaddingTop,</span><br><span class="line">                    scrollX + mRight - mLeft - mPaddingRight,</span><br><span class="line">                    scrollY + mBottom - mTop - mPaddingBottom);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        canvas.translate(mPaddingLeft, mPaddingTop);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mDrawMatrix != <span class="keyword">null</span>) &#123;</span><br><span class="line">            canvas.concat(mDrawMatrix);</span><br><span class="line">        &#125;</span><br><span class="line">        mDrawable.draw(canvas);</span><br><span class="line">        canvas.restoreToCount(saveCount);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在onDraw()的源码可以看出，ImageView的绘制，最终是通过Drawable的draw(Canvas canvas)方法完成的。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="tag"># Android源码学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/16/Android-RecyclerView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/" rel="next" title="Android RecyclerView源码浅析">
+                <i class="fa fa-chevron-left"></i> Android RecyclerView源码浅析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/04/16/Android-TextView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90%E4%B9%8B%E9%A1%B6%E5%B1%82%E6%B5%81%E7%A8%8B/" rel="prev" title="Android TextView源码浅析之顶层流程">
+                Android TextView源码浅析之顶层流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#OverView"><span class="nav-number">1.</span> <span class="nav-text">OverView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ImageView-ScaleType"><span class="nav-number">2.</span> <span class="nav-text">ImageView.ScaleType</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onMeasure"><span class="nav-number">4.</span> <span class="nav-text">onMeasure()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onLayout"><span class="nav-number">5.</span> <span class="nav-text">onLayout()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onDraw"><span class="nav-number">6.</span> <span class="nav-text">onDraw()</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android源码学习," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OverViewAndroid ListView 是Android中常用的长列表组件，其继承层次如下： 用法通常在业务代码中使用ListView的常用姿势是：  创建1个ListView 创建1个BaseAdapter的子类，实现getCount&#x2F;getItem&#x2F;getItemId&#x2F;getView这4个方法，有时候还会实现getItemViewType&#x2F;getViewTypeCount方法来满足有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android ListView源码学习">
+<meta property="og:url" content="http://example.com/2021/04/16/Android-ListView%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="OverViewAndroid ListView 是Android中常用的长列表组件，其继承层次如下： 用法通常在业务代码中使用ListView的常用姿势是：  创建1个ListView 创建1个BaseAdapter的子类，实现getCount&#x2F;getItem&#x2F;getItemId&#x2F;getView这4个方法，有时候还会实现getItemViewType&#x2F;getViewTypeCount方法来满足有">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-5599c6565bf045a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2021-04-16T09:45:59.000Z">
+<meta property="article:modified_time" content="2021-04-16T09:47:08.741Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Android源码学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/5866715-5599c6565bf045a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/16/Android-ListView源码学习/"/>
+
+
+
+
+
+  <title>Android ListView源码学习 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/16/Android-ListView%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android ListView源码学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-04-16T17:45:59+08:00">
+                2021-04-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="OverView"><a href="#OverView" class="headerlink" title="OverView"></a>OverView</h3><p>Android ListView 是Android中常用的长列表组件，其继承层次如下：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-5599c6565bf045a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h3><p>通常在业务代码中使用ListView的常用姿势是：</p>
+<ul>
+<li>创建1个ListView</li>
+<li>创建1个BaseAdapter的子类，实现getCount/getItem/getItemId/getView这4个方法，有时候还会实现getItemViewType/getViewTypeCount方法来满足有多种ItemView样式的需求</li>
+<li>将BaseAdatper的子类实例通过ListView的setAdapter()方法，设置给ListView实例</li>
+</ul>
+<h3 id="常用优化"><a href="#常用优化" class="headerlink" title="常用优化"></a>常用优化</h3><p>通常的ListView在View的复用上有2种优化：</p>
+<ul>
+<li>public View getView(int position, View convertView, ViewGroup parent)这个方法在实现是，首先判断一下传入的convertView是否为null，不为null即可复用，无需调用inflate或者new来新创建1个View</li>
+<li>可以通过ViewHoloder的方法，将convertView的子View直接存一个引用在ViewHolder中，然后将ViewHolder通过convertView的setTag方法存储在convertView上；这种做法的好处在于，通过对子View的直接引用访问，避免了findViewById的耗时操作</li>
+</ul>
+<h3 id="源码浅析"><a href="#源码浅析" class="headerlink" title="源码浅析"></a>源码浅析</h3><p>ListView的源码比较长，暂时先把精力放在理解Adapter的6个方法(getViewTypeCount/getItemViewType/getCount/getItem/getItemId/getView)被调用的时机上，更详细的源码分析文章已经很多了，比较经典的有郭霖前辈的<a target="_blank" rel="noopener" href="https://blog.csdn.net/sinyu890807/article/details/44996879">https://blog.csdn.net/sinyu890807/article/details/44996879</a></p>
+<h3 id="int-getViewTypeCount"><a href="#int-getViewTypeCount" class="headerlink" title="int getViewTypeCount()"></a>int getViewTypeCount()</h3><p>在源码中搜索getViewTypeCount()被引用的位置，得到的和ListView相关的结果是在setAdapter(ListAdapter adapter)方法中有1行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mRecycler.setViewTypeCount(mAdapter.getViewTypeCount());</span><br></pre></td></tr></table></figure>
+<p>这个mRecycler成员是RecycleBin类型，RecycleBin的定义在AbsListView中，其作用顾名思义，就是起到1个回收的垃圾箱作用，其setViewTypeCount(int viewTypeCount)方法的实现为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setViewTypeCount</span><span class="params">(<span class="keyword">int</span> viewTypeCount)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (viewTypeCount &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;Can&#x27;t have a viewTypeCount &lt; 1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//noinspection unchecked</span></span><br><span class="line">    ArrayList&lt;View&gt;[] scrapViews = <span class="keyword">new</span> ArrayList[viewTypeCount];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; viewTypeCount; i++) &#123;</span><br><span class="line">        scrapViews[i] = <span class="keyword">new</span> ArrayList&lt;View&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    mViewTypeCount = viewTypeCount;</span><br><span class="line">    mCurrentScrap = scrapViews[<span class="number">0</span>];</span><br><span class="line">    mScrapViews = scrapViews;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RecycleBin回收废弃View的实现是通过其scrapViews数组实现的，而传入的viewTypeCount决定了这个数组的长度，注意scrapViews的每一个成员是一个ArrayList<View>；在这里我的理解是，viewTypeCount决定了有多少种View会被回收，而每1个被回收的View会根据viewType进入到对应的ArrayList<View>中去，方便在复用时从正确的类型中取出对应的View来进行复用。</p>
+<h3 id="int-getItemViewType-int-position"><a href="#int-getItemViewType-int-position" class="headerlink" title="int getItemViewType(int position)"></a>int getItemViewType(int position)</h3><p>在源码中搜索该函数，有好几处调用的地方，但多数调用都是得到viewType之后设置到AbsListView.LayoutParams的viewType属性上使用，这种使用并不是非常重要，真正关键的调用在AbsListView的getScrapView(position)函数中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">View <span class="title">getScrapView</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> whichScrap = mAdapter.getItemViewType(position);</span><br><span class="line">    <span class="keyword">if</span> (whichScrap &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mViewTypeCount == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> retrieveFromScrap(mCurrentScrap, position);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (whichScrap &lt; mScrapViews.length) &#123;</span><br><span class="line">        <span class="keyword">return</span> retrieveFromScrap(mScrapViews[whichScrap], position);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>getScrapView(int position)函数的作用在于，从废弃的View中获取一个View，准备复用，从实现上可以看出，getItemViewType的作用在于，得到正确的ViewType，从而从对应的mScrapViews数组中取出1个ScrapView</p>
+<h3 id="int-getCount"><a href="#int-getCount" class="headerlink" title="int getCount()"></a>int getCount()</h3><p>getCount()的调用在源码中的搜索结果就实在是太多了，粗略浏览的一下，把觉得比较关键的点记录下来</p>
+<ul>
+<li><p>首先是ListView的setAdatper()函数中有这么一句：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mItemCount = mAdapter.getCount();</span><br></pre></td></tr></table></figure>
+<p>这个mItemCount是ListView的祖先类AdapterView的成员，设置到这上面之后就能更加方便地使用了</p>
+</li>
+<li><p>然后是ListView的layoutChildren()函数中有这么一段：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (mItemCount == <span class="number">0</span>) &#123;</span><br><span class="line">    resetList();</span><br><span class="line">    invokeOnItemScrollListener();</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (mItemCount != mAdapter.getCount()) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;The content of the adapter has changed but &quot;</span></span><br><span class="line">            + <span class="string">&quot;ListView did not receive a notification. Make sure the content of &quot;</span></span><br><span class="line">            + <span class="string">&quot;your adapter is not modified from a background thread, but only from &quot;</span></span><br><span class="line">            + <span class="string">&quot;the UI thread. Make sure your adapter calls notifyDataSetChanged() &quot;</span></span><br><span class="line">            + <span class="string">&quot;when its content changes. [in ListView(&quot;</span> + getId() + <span class="string">&quot;, &quot;</span> + getClass()</span><br><span class="line">            + <span class="string">&quot;) with Adapter(&quot;</span> + mAdapter.getClass() + <span class="string">&quot;)]&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在layoutChildren()过程中需要检查mItemCount和mAdapter.getCount()是否一致，如果不一致，证明数据源被改变了却没有调用notifyDataSetChanged()通知观察方</p>
+</li>
+</ul>
+<h3 id="Object-getItem-int-position"><a href="#Object-getItem-int-position" class="headerlink" title="Object getItem(int position)"></a>Object getItem(int position)</h3><p>getItem(int position)方法主要被调用的地方在AdapterView的getItemAtPosition(int position)函数中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getItemAtPosition</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123;</span><br><span class="line">    T adapter = getAdapter();</span><br><span class="line">    <span class="keyword">return</span> (adapter == <span class="keyword">null</span> || position &lt; <span class="number">0</span>) ? <span class="keyword">null</span> : adapter.getItem(position);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除此之外，在源码中再没找到getItem(int position)的相关调用，这也可以理解，因为getItem(int position)更主要的使用场景是我们在业务代码中调用，通过该方法，能够从Adapter里拿出数据项，而不需要直接跟数据源接触。</p>
+<h3 id="long-getItemId-int-position"><a href="#long-getItemId-int-position" class="headerlink" title="long getItemId(int position)"></a>long getItemId(int position)</h3><p>getItemId(int postion)函数在源码中搜索，ListView中的调用已经被标注为@Deprecate，其余主要的调用都在AbsListView中，选择其中一处来看下这个方法的作用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setItemChecked</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">boolean</span> value)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (mChoiceMode == CHOICE_MODE_NONE) &#123;</span><br><span class="line">         <span class="keyword">return</span>;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">// Start selection mode if needed. We don&#x27;t need to if we&#x27;re unchecking something.</span></span><br><span class="line">     <span class="keyword">if</span> (value &amp;&amp; mChoiceMode == CHOICE_MODE_MULTIPLE_MODAL &amp;&amp; mChoiceActionMode == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">if</span> (mMultiChoiceModeCallback == <span class="keyword">null</span> ||</span><br><span class="line">                 !mMultiChoiceModeCallback.hasWrappedCallback()) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;AbsListView: attempted to start selection mode &quot;</span> +</span><br><span class="line">                     <span class="string">&quot;for CHOICE_MODE_MULTIPLE_MODAL but no choice mode callback was &quot;</span> +</span><br><span class="line">                     <span class="string">&quot;supplied. Call setMultiChoiceModeListener to set a callback.&quot;</span>);</span><br><span class="line">         &#125;</span><br><span class="line">         mChoiceActionMode = startActionMode(mMultiChoiceModeCallback);</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">final</span> <span class="keyword">boolean</span> itemCheckChanged;</span><br><span class="line">     <span class="keyword">if</span> (mChoiceMode == CHOICE_MODE_MULTIPLE || mChoiceMode == CHOICE_MODE_MULTIPLE_MODAL) &#123;</span><br><span class="line">         <span class="keyword">boolean</span> oldValue = mCheckStates.get(position);</span><br><span class="line">         mCheckStates.put(position, value);</span><br><span class="line">         <span class="keyword">if</span> (mCheckedIdStates != <span class="keyword">null</span> &amp;&amp; mAdapter.hasStableIds()) &#123;</span><br><span class="line">             <span class="keyword">if</span> (value) &#123;</span><br><span class="line">                 mCheckedIdStates.put(mAdapter.getItemId(position), position);</span><br><span class="line">             &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                 mCheckedIdStates.delete(mAdapter.getItemId(position));</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">         itemCheckChanged = oldValue != value;</span><br><span class="line">         <span class="keyword">if</span> (itemCheckChanged) &#123;</span><br><span class="line">             <span class="keyword">if</span> (value) &#123;</span><br><span class="line">                 mCheckedItemCount++;</span><br><span class="line">             &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                 mCheckedItemCount--;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">if</span> (mChoiceActionMode != <span class="keyword">null</span>) &#123;</span><br><span class="line">             <span class="keyword">final</span> <span class="keyword">long</span> id = mAdapter.getItemId(position);</span><br><span class="line">             mMultiChoiceModeCallback.onItemCheckedStateChanged(mChoiceActionMode,</span><br><span class="line">                     position, id, value);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ……</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="comment">// this may end up selecting the value we just cleared but this way</span></span><br><span class="line">         <span class="comment">// we ensure length of mCheckStates is 1, a fact getCheckedItemPosition relies on</span></span><br><span class="line">         <span class="keyword">if</span> (value) &#123;</span><br><span class="line">             mCheckStates.put(position, <span class="keyword">true</span>);</span><br><span class="line">             <span class="keyword">if</span> (updateIds) &#123;</span><br><span class="line">                 mCheckedIdStates.put(mAdapter.getItemId(position), position);</span><br><span class="line">             &#125;</span><br><span class="line">             mCheckedItemCount = <span class="number">1</span>;</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mCheckStates.size() == <span class="number">0</span> || !mCheckStates.valueAt(<span class="number">0</span>)) &#123;</span><br><span class="line">             mCheckedItemCount = <span class="number">0</span>;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">// Do not generate a data change while we are in the layout phase or data has not changed</span></span><br><span class="line">     <span class="keyword">if</span> (!mInLayout &amp;&amp; !mBlockLayoutRequests &amp;&amp; itemCheckChanged) &#123;</span><br><span class="line">         mDataChanged = <span class="keyword">true</span>;</span><br><span class="line">         rememberSyncState();</span><br><span class="line">         requestLayout();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，主要是通过该方法，获得对应位置的id后，能够作为一个索引，用于增删改查等快速操作。</p>
+<h3 id="View-getView-int-position-View-convertView-ViewGroup-parent"><a href="#View-getView-int-position-View-convertView-ViewGroup-parent" class="headerlink" title="View getView(int position, View convertView, ViewGroup parent)"></a>View getView(int position, View convertView, ViewGroup parent)</h3><p>最后Adapter中最重要的方法，getView方法的作用是返回某一项对应的ItemView，在源码中关键的调用是AbsListView中的obtainView()方法中的调用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">final View scrapView &#x3D; mRecycler.getScrapView(position);</span><br><span class="line">final View child &#x3D; mAdapter.getView(position, scrapView, this);</span><br><span class="line">if (scrapView !&#x3D; null) &#123;</span><br><span class="line">    if (child !&#x3D; scrapView) &#123;</span><br><span class="line">        &#x2F;&#x2F; Failed to re-bind the data, return scrap to the heap.</span><br><span class="line">        mRecycler.addScrapView(scrapView, position);</span><br><span class="line">    &#125; else if (child.isTemporarilyDetached()) &#123;</span><br><span class="line">        outMetadata[0] &#x3D; true;</span><br><span class="line"></span><br><span class="line">        &#x2F;&#x2F; Finish the temporary detach started in addScrapView().</span><br><span class="line">        child.dispatchFinishTemporaryDetach();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AbsListView的obtainView函数的作用就是构建出某一position对应的View，首先会从mRecycler中取出一个对应的废弃View，这个废弃View就是传入Adapter的getView()方法中的convertView，这里也就解释了为什么需要判空——在首次布局时，实际上是还没有废弃的View可用的，而后面布局时就有废弃的View可复用，无需重新构建了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="tag"># Android源码学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/16/Android-AbsoluteLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="next" title="Android AbsoluteLayout源码学习">
+                <i class="fa fa-chevron-left"></i> Android AbsoluteLayout源码学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/04/16/Android-RecyclerView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/" rel="prev" title="Android RecyclerView源码浅析">
+                Android RecyclerView源码浅析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#OverView"><span class="nav-number">1.</span> <span class="nav-text">OverView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E4%BC%98%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">常用优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">源码浅析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#int-getViewTypeCount"><span class="nav-number">5.</span> <span class="nav-text">int getViewTypeCount()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#int-getItemViewType-int-position"><span class="nav-number">6.</span> <span class="nav-text">int getItemViewType(int position)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#int-getCount"><span class="nav-number">7.</span> <span class="nav-text">int getCount()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Object-getItem-int-position"><span class="nav-number">8.</span> <span class="nav-text">Object getItem(int position)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#long-getItemId-int-position"><span class="nav-number">9.</span> <span class="nav-text">long getItemId(int position)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#View-getView-int-position-View-convertView-ViewGroup-parent"><span class="nav-number">10.</span> <span class="nav-text">View getView(int position, View convertView, ViewGroup parent)</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android源码," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OverView在上一篇从顶层整体流程分析TextView时能看到Layout这个重要概念，无论是onMeasure()过程还是onDraw()过程，主要工作都是由Layout来完成。Layout类负责的作用是，完成TextView的排版，包括折行、省略等等。 TextView.makeNewLayout()在上一篇的分析中，在onMeasure()过程，会调用到TextView的makeNewL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android TextView源码浅析之Layout">
+<meta property="og:url" content="http://example.com/2021/04/16/Android-TextView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90%E4%B9%8BLayout/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="OverView在上一篇从顶层整体流程分析TextView时能看到Layout这个重要概念，无论是onMeasure()过程还是onDraw()过程，主要工作都是由Layout来完成。Layout类负责的作用是，完成TextView的排版，包括折行、省略等等。 TextView.makeNewLayout()在上一篇的分析中，在onMeasure()过程，会调用到TextView的makeNewL">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-104ca2a82c54aaac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2021-04-16T09:53:03.000Z">
+<meta property="article:modified_time" content="2021-04-16T09:57:07.484Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Android源码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/5866715-104ca2a82c54aaac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/16/Android-TextView源码浅析之Layout/"/>
+
+
+
+
+
+  <title>Android TextView源码浅析之Layout | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/16/Android-TextView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90%E4%B9%8BLayout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android TextView源码浅析之Layout</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-04-16T17:53:03+08:00">
+                2021-04-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="OverView"><a href="#OverView" class="headerlink" title="OverView"></a>OverView</h3><p>在上一篇从顶层整体流程分析TextView时能看到Layout这个重要概念，无论是onMeasure()过程还是onDraw()过程，主要工作都是由Layout来完成。<br>Layout类负责的作用是，完成TextView的排版，包括折行、省略等等。</p>
+<h3 id="TextView-makeNewLayout"><a href="#TextView-makeNewLayout" class="headerlink" title="TextView.makeNewLayout()"></a>TextView.makeNewLayout()</h3><p>在上一篇的分析中，在onMeasure()过程，会调用到TextView的makeNewLayout()方法，现在来看下它的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">makeNewLayout</span><span class="params">(<span class="keyword">int</span> wantWidth, <span class="keyword">int</span> hintWidth,</span></span></span><br><span class="line"><span class="function"><span class="params">                             BoringLayout.Metrics boring,</span></span></span><br><span class="line"><span class="function"><span class="params">                             BoringLayout.Metrics hintBoring,</span></span></span><br><span class="line"><span class="function"><span class="params">                             <span class="keyword">int</span> ellipsisWidth, <span class="keyword">boolean</span> bringIntoView)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 暂停走马灯动画</span></span><br><span class="line">    stopMarquee();</span><br><span class="line"></span><br><span class="line">    mOldMaximum = mMaximum;</span><br><span class="line">    mOldMaxMode = mMaxMode;</span><br><span class="line"></span><br><span class="line">    mHighlightPathBogus = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (wantWidth &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        wantWidth = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (hintWidth &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        hintWidth = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 1.获取对齐方式</span></span><br><span class="line">    Layout.Alignment alignment = getLayoutAlignment();</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> testDirChange = mSingleLine &amp;&amp; mLayout != <span class="keyword">null</span></span><br><span class="line">            &amp;&amp; (alignment == Layout.Alignment.ALIGN_NORMAL</span><br><span class="line">                    || alignment == Layout.Alignment.ALIGN_OPPOSITE);</span><br><span class="line">    <span class="keyword">int</span> oldDir = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (testDirChange) oldDir = mLayout.getParagraphDirection(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">boolean</span> shouldEllipsize = mEllipsize != <span class="keyword">null</span> &amp;&amp; getKeyListener() == <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 2.处理省略方式</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> switchEllipsize = mEllipsize == TruncateAt.MARQUEE</span><br><span class="line">            &amp;&amp; mMarqueeFadeMode != MARQUEE_FADE_NORMAL;</span><br><span class="line">    TruncateAt effectiveEllipsize = mEllipsize;</span><br><span class="line">    <span class="keyword">if</span> (mEllipsize == TruncateAt.MARQUEE</span><br><span class="line">            &amp;&amp; mMarqueeFadeMode == MARQUEE_FADE_SWITCH_SHOW_ELLIPSIS) &#123;</span><br><span class="line">        effectiveEllipsize = TruncateAt.END_SMALL;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 3.获取文字方向</span></span><br><span class="line">    <span class="keyword">if</span> (mTextDir == <span class="keyword">null</span>) &#123;</span><br><span class="line">        mTextDir = getTextDirectionHeuristic();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 4.通过上述信息，构建mLayout</span></span><br><span class="line">    mLayout = makeSingleLayout(wantWidth, boring, ellipsisWidth, alignment, shouldEllipsize,</span><br><span class="line">            effectiveEllipsize, effectiveEllipsize == mEllipsize);</span><br><span class="line">    <span class="keyword">if</span> (switchEllipsize) &#123;</span><br><span class="line">        TruncateAt oppositeEllipsize = effectiveEllipsize == TruncateAt.MARQUEE</span><br><span class="line">                ? TruncateAt.END : TruncateAt.MARQUEE;</span><br><span class="line">        mSavedMarqueeModeLayout = makeSingleLayout(wantWidth, boring, ellipsisWidth, alignment,</span><br><span class="line">                shouldEllipsize, oppositeEllipsize, effectiveEllipsize != mEllipsize);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    shouldEllipsize = mEllipsize != <span class="keyword">null</span>;</span><br><span class="line">    mHintLayout = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 5.构建出用于显示hint的Layout</span></span><br><span class="line">    <span class="keyword">if</span> (mHint != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (shouldEllipsize) hintWidth = wantWidth;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (hintBoring == UNKNOWN_BORING) &#123;</span><br><span class="line">            hintBoring = BoringLayout.isBoring(mHint, mTextPaint, mTextDir,</span><br><span class="line">                                               mHintBoring);</span><br><span class="line">            <span class="keyword">if</span> (hintBoring != <span class="keyword">null</span>) &#123;</span><br><span class="line">                mHintBoring = hintBoring;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (hintBoring != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (hintBoring.width &lt;= hintWidth</span><br><span class="line">                    &amp;&amp; (!shouldEllipsize || hintBoring.width &lt;= ellipsisWidth)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (mSavedHintLayout != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    mHintLayout = mSavedHintLayout.replaceOrMake(mHint, mTextPaint,</span><br><span class="line">                            hintWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            hintBoring, mIncludePad);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    mHintLayout = BoringLayout.make(mHint, mTextPaint,</span><br><span class="line">                            hintWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            hintBoring, mIncludePad);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                mSavedHintLayout = (BoringLayout) mHintLayout;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (shouldEllipsize &amp;&amp; hintBoring.width &lt;= hintWidth) &#123;</span><br><span class="line">                <span class="keyword">if</span> (mSavedHintLayout != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    mHintLayout = mSavedHintLayout.replaceOrMake(mHint, mTextPaint,</span><br><span class="line">                            hintWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            hintBoring, mIncludePad, mEllipsize,</span><br><span class="line">                            ellipsisWidth);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    mHintLayout = BoringLayout.make(mHint, mTextPaint,</span><br><span class="line">                            hintWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            hintBoring, mIncludePad, mEllipsize,</span><br><span class="line">                            ellipsisWidth);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mHintLayout == <span class="keyword">null</span>) &#123;</span><br><span class="line">            StaticLayout.Builder builder = StaticLayout.Builder.obtain(mHint, <span class="number">0</span>,</span><br><span class="line">                    mHint.length(), mTextPaint, hintWidth)</span><br><span class="line">                    .setAlignment(alignment)</span><br><span class="line">                    .setTextDirection(mTextDir)</span><br><span class="line">                    .setLineSpacing(mSpacingAdd, mSpacingMult)</span><br><span class="line">                    .setIncludePad(mIncludePad)</span><br><span class="line">                    .setUseLineSpacingFromFallbacks(mUseFallbackLineSpacing)</span><br><span class="line">                    .setBreakStrategy(mBreakStrategy)</span><br><span class="line">                    .setHyphenationFrequency(mHyphenationFrequency)</span><br><span class="line">                    .setJustificationMode(mJustificationMode)</span><br><span class="line">                    .setMaxLines(mMaxMode == LINES ? mMaximum : Integer.MAX_VALUE);</span><br><span class="line">            <span class="keyword">if</span> (shouldEllipsize) &#123;</span><br><span class="line">                builder.setEllipsize(mEllipsize)</span><br><span class="line">                        .setEllipsizedWidth(ellipsisWidth);</span><br><span class="line">            &#125;</span><br><span class="line">            mHintLayout = builder.build();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (bringIntoView || (testDirChange &amp;&amp; oldDir != mLayout.getParagraphDirection(<span class="number">0</span>))) &#123;</span><br><span class="line">        registerForPreDraw();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 6.重启走马灯动画</span></span><br><span class="line">    <span class="keyword">if</span> (mEllipsize == TextUtils.TruncateAt.MARQUEE) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!compressText(ellipsisWidth)) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> height = mLayoutParams.height;</span><br><span class="line">            <span class="keyword">if</span> (height != LayoutParams.WRAP_CONTENT &amp;&amp; height != LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                startMarquee();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                mRestartMarquee = <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// CursorControllers need a non-null mLayout</span></span><br><span class="line">    <span class="keyword">if</span> (mEditor != <span class="keyword">null</span>) mEditor.prepareCursorControllers();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个函数中，最重要的是第4点的通过调用makeSingleLayout()方法构建出主Layout，但第5点构建hint的Layout也很值得学习，因为涉及了BoringLayout和StaticLayout这两个重要的概念：<br>BoringLayout和StaticLayout都是Layout的子类，其中BoringLayout是指不包含Span而且文本都是左到右而且能够一行展示下的文本，这种情况下使用BoringLayout能够节省不必要的计算；当hint不满足BoringLayout的条件时，会使用StaticLayout来进行布局</p>
+<h3 id="TextView-makeSingleLayout-方法"><a href="#TextView-makeSingleLayout-方法" class="headerlink" title="TextView.makeSingleLayout()方法"></a>TextView.makeSingleLayout()方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Layout <span class="title">makeSingleLayout</span><span class="params">(<span class="keyword">int</span> wantWidth, BoringLayout.Metrics boring, <span class="keyword">int</span> ellipsisWidth,</span></span></span><br><span class="line"><span class="function"><span class="params">        Layout.Alignment alignment, <span class="keyword">boolean</span> shouldEllipsize, TruncateAt effectiveEllipsize,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> useSaved)</span> </span>&#123;</span><br><span class="line">    Layout result = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// 这个方法的内部会判断文本是否是Spannable，是的话会使用DynamicLayout</span></span><br><span class="line">    <span class="keyword">if</span> (useDynamicLayout()) &#123;</span><br><span class="line">        <span class="keyword">final</span> DynamicLayout.Builder builder = DynamicLayout.Builder.obtain(mText, mTextPaint,</span><br><span class="line">                wantWidth)</span><br><span class="line">                .setDisplayText(mTransformed)</span><br><span class="line">                .setAlignment(alignment)</span><br><span class="line">                .setTextDirection(mTextDir)</span><br><span class="line">                .setLineSpacing(mSpacingAdd, mSpacingMult)</span><br><span class="line">                .setIncludePad(mIncludePad)</span><br><span class="line">                .setUseLineSpacingFromFallbacks(mUseFallbackLineSpacing)</span><br><span class="line">                .setBreakStrategy(mBreakStrategy)</span><br><span class="line">                .setHyphenationFrequency(mHyphenationFrequency)</span><br><span class="line">                .setJustificationMode(mJustificationMode)</span><br><span class="line">                .setEllipsize(getKeyListener() == <span class="keyword">null</span> ? effectiveEllipsize : <span class="keyword">null</span>)</span><br><span class="line">                .setEllipsizedWidth(ellipsisWidth);</span><br><span class="line">        result = builder.build();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 判断是否确定了是不是Boring</span></span><br><span class="line">        <span class="keyword">if</span> (boring == UNKNOWN_BORING) &#123;</span><br><span class="line">            boring = BoringLayout.isBoring(mTransformed, mTextPaint, mTextDir, mBoring);</span><br><span class="line">            <span class="keyword">if</span> (boring != <span class="keyword">null</span>) &#123;</span><br><span class="line">                mBoring = boring;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 这个条件如果成立，则证明是Boring</span></span><br><span class="line">        <span class="keyword">if</span> (boring != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 根据boring的不同属性，创建对应的Layout，if-else分支里都会尝试从mSavedLayout中创建，拿不到再调用BoringLayout.make()来创建新的</span></span><br><span class="line">            <span class="keyword">if</span> (boring.width &lt;= wantWidth</span><br><span class="line">                    &amp;&amp; (effectiveEllipsize == <span class="keyword">null</span> || boring.width &lt;= ellipsisWidth)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (useSaved &amp;&amp; mSavedLayout != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    result = mSavedLayout.replaceOrMake(mTransformed, mTextPaint,</span><br><span class="line">                            wantWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            boring, mIncludePad);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    result = BoringLayout.make(mTransformed, mTextPaint,</span><br><span class="line">                            wantWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            boring, mIncludePad);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (useSaved) &#123;</span><br><span class="line">                    mSavedLayout = (BoringLayout) result;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (shouldEllipsize &amp;&amp; boring.width &lt;= wantWidth) &#123;</span><br><span class="line">                <span class="keyword">if</span> (useSaved &amp;&amp; mSavedLayout != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    result = mSavedLayout.replaceOrMake(mTransformed, mTextPaint,</span><br><span class="line">                            wantWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            boring, mIncludePad, effectiveEllipsize,</span><br><span class="line">                            ellipsisWidth);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    result = BoringLayout.make(mTransformed, mTextPaint,</span><br><span class="line">                            wantWidth, alignment, mSpacingMult, mSpacingAdd,</span><br><span class="line">                            boring, mIncludePad, effectiveEllipsize,</span><br><span class="line">                            ellipsisWidth);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 在这里result依然为null，证明不是Boring，需要用StaticLayout</span></span><br><span class="line">    <span class="keyword">if</span> (result == <span class="keyword">null</span>) &#123;</span><br><span class="line">        StaticLayout.Builder builder = StaticLayout.Builder.obtain(mTransformed,</span><br><span class="line">                <span class="number">0</span>, mTransformed.length(), mTextPaint, wantWidth)</span><br><span class="line">                .setAlignment(alignment)</span><br><span class="line">                .setTextDirection(mTextDir)</span><br><span class="line">                .setLineSpacing(mSpacingAdd, mSpacingMult)</span><br><span class="line">                .setIncludePad(mIncludePad)</span><br><span class="line">                .setUseLineSpacingFromFallbacks(mUseFallbackLineSpacing)</span><br><span class="line">                .setBreakStrategy(mBreakStrategy)</span><br><span class="line">                .setHyphenationFrequency(mHyphenationFrequency)</span><br><span class="line">                .setJustificationMode(mJustificationMode)</span><br><span class="line">                .setMaxLines(mMaxMode == LINES ? mMaximum : Integer.MAX_VALUE);</span><br><span class="line">        <span class="keyword">if</span> (shouldEllipsize) &#123;</span><br><span class="line">            builder.setEllipsize(effectiveEllipsize)</span><br><span class="line">                    .setEllipsizedWidth(ellipsisWidth);</span><br><span class="line">        &#125;</span><br><span class="line">        result = builder.build();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StaticLayout-generate"><a href="#StaticLayout-generate" class="headerlink" title="StaticLayout.generate()"></a>StaticLayout.generate()</h3><p>在调用StaticLayout.Builder.build()方法之后，最终会调用到StaticLayout的generate()方法来构建出真正对应的Layout，generate()方法很长，还是采取分部分的方式来看：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> CharSequence source = b.mText;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> bufStart = b.mStart;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> bufEnd = b.mEnd;</span><br><span class="line">    TextPaint paint = b.mPaint;</span><br><span class="line">    <span class="keyword">int</span> outerWidth = b.mWidth;</span><br><span class="line">    TextDirectionHeuristic textDir = b.mTextDir;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> fallbackLineSpacing = b.mFallbackLineSpacing;</span><br><span class="line">    <span class="keyword">float</span> spacingmult = b.mSpacingMult;</span><br><span class="line">    <span class="keyword">float</span> spacingadd = b.mSpacingAdd;</span><br><span class="line">    <span class="keyword">float</span> ellipsizedWidth = b.mEllipsizedWidth;</span><br><span class="line">    TextUtils.TruncateAt ellipsize = b.mEllipsize;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> addLastLineSpacing = b.mAddLastLineLineSpacing;</span><br><span class="line">    LineBreaks lineBreaks = <span class="keyword">new</span> LineBreaks(); </span><br><span class="line">    FloatArray widths = <span class="keyword">new</span> FloatArray();</span><br><span class="line"></span><br><span class="line">    mLineCount = <span class="number">0</span>;</span><br><span class="line">    mEllipsized = <span class="keyword">false</span>;</span><br><span class="line">    mMaxLineHeight = mMaximumVisibleLineCount &lt; <span class="number">1</span> ? <span class="number">0</span> : DEFAULT_MAX_LINE_HEIGHT;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> v = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">boolean</span> needMultiply = (spacingmult != <span class="number">1</span> || spacingadd != <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    Paint.FontMetricsInt fm = b.mFontMetricsInt;</span><br><span class="line">    <span class="keyword">int</span>[] chooseHtv = <span class="keyword">null</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第1部分是变量的初始化<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">int</span>[] indents;</span><br><span class="line">    <span class="keyword">if</span> (mLeftIndents != <span class="keyword">null</span> || mRightIndents != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> leftLen = mLeftIndents == <span class="keyword">null</span> ? <span class="number">0</span> : mLeftIndents.length;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> rightLen = mRightIndents == <span class="keyword">null</span> ? <span class="number">0</span> : mRightIndents.length;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> indentsLen = Math.max(leftLen, rightLen);</span><br><span class="line">        indents = <span class="keyword">new</span> <span class="keyword">int</span>[indentsLen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; leftLen; i++) &#123;</span><br><span class="line">            indents[i] = mLeftIndents[i];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; rightLen; i++) &#123;</span><br><span class="line">            indents[i] += mRightIndents[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        indents = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> nativePtr = nInit(</span><br><span class="line">            b.mBreakStrategy, b.mHyphenationFrequency,</span><br><span class="line">            b.mJustificationMode != Layout.JUSTIFICATION_MODE_NONE,</span><br><span class="line">            indents, mLeftPaddings, mRightPaddings);</span><br></pre></td></tr></table></figure></li>
+<li>第2部分是对文本缩进的处理，最终处理调用的是native函数实现，但实际这个if代码块，暂时还没有找到能够判断为true的地方<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">PrecomputedText.ParagraphInfo[] paragraphInfo = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">final</span> Spanned spanned = (source <span class="keyword">instanceof</span> Spanned) ? (Spanned) source : <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">if</span> (source <span class="keyword">instanceof</span> PrecomputedText) &#123;</span><br><span class="line">    PrecomputedText precomputed = (PrecomputedText) source;</span><br><span class="line">    <span class="keyword">if</span> (precomputed.canUseMeasuredResult(bufStart, bufEnd, textDir, paint,</span><br><span class="line">              b.mBreakStrategy, b.mHyphenationFrequency)) &#123;</span><br><span class="line">        paragraphInfo = precomputed.getParagraphInfo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (paragraphInfo == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">final</span> PrecomputedText.Params param = <span class="keyword">new</span> PrecomputedText.Params(paint, textDir,</span><br><span class="line">            b.mBreakStrategy, b.mHyphenationFrequency);</span><br><span class="line">    paragraphInfo = PrecomputedText.createMeasuredParagraphs(source, param, bufStart,</span><br><span class="line">            bufEnd, <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>第3部分是分析文本的段落信息，这里涉及到的PrecomputedText是包含了文本测量信息的类，通过它来构建文本能够节省一些开销</li>
+</ul>
+<p>接下来的部分，是根据段落信息，逐段地分析段落里的文本内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> paraIndex = <span class="number">0</span>; paraIndex &lt; paragraphInfo.length; paraIndex++) &#123;</span><br><span class="line">         <span class="keyword">final</span> <span class="keyword">int</span> paraStart = paraIndex == <span class="number">0</span></span><br><span class="line">                 ? bufStart : paragraphInfo[paraIndex - <span class="number">1</span>].paragraphEnd;</span><br><span class="line">         <span class="keyword">final</span> <span class="keyword">int</span> paraEnd = paragraphInfo[paraIndex].paragraphEnd;</span><br><span class="line"> <span class="comment">// ……</span></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>下面这几段的代码都发生在这个大的for循环中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> firstWidthLineCount = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">int</span> firstWidth = outerWidth;</span><br><span class="line"><span class="keyword">int</span> restWidth = outerWidth;</span><br><span class="line"></span><br><span class="line">LineHeightSpan[] chooseHt = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (spanned != <span class="keyword">null</span>) &#123;</span><br><span class="line">    LeadingMarginSpan[] sp = getParagraphSpans(spanned, paraStart, paraEnd,</span><br><span class="line">            LeadingMarginSpan.class);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sp.length; i++) &#123;</span><br><span class="line">        LeadingMarginSpan lms = sp[i];</span><br><span class="line">        firstWidth -= sp[i].getLeadingMargin(<span class="keyword">true</span>);</span><br><span class="line">        restWidth -= sp[i].getLeadingMargin(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// LeadingMarginSpan2 is odd.  The count affects all</span></span><br><span class="line">        <span class="comment">// leading margin spans, not just this particular one</span></span><br><span class="line">        <span class="keyword">if</span> (lms <span class="keyword">instanceof</span> LeadingMarginSpan2) &#123;</span><br><span class="line">            LeadingMarginSpan2 lms2 = (LeadingMarginSpan2) lms;</span><br><span class="line">            firstWidthLineCount = Math.max(firstWidthLineCount,</span><br><span class="line">                    lms2.getLeadingMarginLineCount());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先是宽度方面的分析，解析LeadingMarginSpan和LeadingMargin2<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">    chooseHt = getParagraphSpans(spanned, paraStart, paraEnd, LineHeightSpan.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (chooseHt.length == <span class="number">0</span>) &#123;</span><br><span class="line">        chooseHt = <span class="keyword">null</span>; <span class="comment">// So that out() would not assume it has any contents</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (chooseHtv == <span class="keyword">null</span> || chooseHtv.length &lt; chooseHt.length) &#123;</span><br><span class="line">            chooseHtv = ArrayUtils.newUnpaddedIntArray(chooseHt.length);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; chooseHt.length; i++) &#123;</span><br><span class="line">            <span class="keyword">int</span> o = spanned.getSpanStart(chooseHt[i]);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (o &lt; paraStart) &#123;</span><br><span class="line">                <span class="comment">// starts in this layout, before the</span></span><br><span class="line">                <span class="comment">// current paragraph</span></span><br><span class="line"></span><br><span class="line">                chooseHtv[i] = getLineTop(getLineForOffset(o));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// starts in this paragraph</span></span><br><span class="line"></span><br><span class="line">                chooseHtv[i] = v;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>然后是行高的分析，通过解析LineHeightSpan来实现<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">int[] variableTabStops &#x3D; null;</span><br><span class="line">if (spanned !&#x3D; null) &#123;</span><br><span class="line">    TabStopSpan[] spans &#x3D; getParagraphSpans(spanned, paraStart,</span><br><span class="line">            paraEnd, TabStopSpan.class);</span><br><span class="line">    if (spans.length &gt; 0) &#123;</span><br><span class="line">        int[] stops &#x3D; new int[spans.length];</span><br><span class="line">        for (int i &#x3D; 0; i &lt; spans.length; i++) &#123;</span><br><span class="line">            stops[i] &#x3D; spans[i].getTabStop();</span><br><span class="line">        &#125;</span><br><span class="line">        Arrays.sort(stops, 0, stops.length);</span><br><span class="line">        variableTabStops &#x3D; stops;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>这一段通过解析TabStopSpan来获取tabStop，排序后存储在variableTabStop中<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">final MeasuredParagraph measuredPara &#x3D; paragraphInfo[paraIndex].measured;</span><br><span class="line">final char[] chs &#x3D; measuredPara.getChars();</span><br><span class="line">final int[] spanEndCache &#x3D; measuredPara.getSpanEndCache().getRawArray();</span><br><span class="line">final int[] fmCache &#x3D; measuredPara.getFontMetrics().getRawArray();</span><br><span class="line">widths.resize(chs.length);</span><br></pre></td></tr></table></figure></li>
+<li>这部分作用是从段落信息paragraphInfo[paraIndex]中取出测量相关的信息，后面准备使用</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> breakCount = nComputeLineBreaks(</span><br><span class="line">         nativePtr,</span><br><span class="line"></span><br><span class="line">         <span class="comment">// Inputs</span></span><br><span class="line">         chs,</span><br><span class="line">         measuredPara.getNativePtr(),</span><br><span class="line">         paraEnd - paraStart,</span><br><span class="line">         firstWidth,</span><br><span class="line">         firstWidthLineCount,</span><br><span class="line">         restWidth,</span><br><span class="line">         variableTabStops,</span><br><span class="line">         TAB_INCREMENT,</span><br><span class="line">         mLineCount,</span><br><span class="line"></span><br><span class="line">         <span class="comment">// Outputs</span></span><br><span class="line">         lineBreaks,</span><br><span class="line">         lineBreaks.breaks.length,</span><br><span class="line">         lineBreaks.breaks,</span><br><span class="line">         lineBreaks.widths,</span><br><span class="line">         lineBreaks.ascents,</span><br><span class="line">         lineBreaks.descents,</span><br><span class="line">         lineBreaks.flags,</span><br><span class="line">         widths.getRawArray());</span><br><span class="line"></span><br><span class="line"> <span class="keyword">final</span> <span class="keyword">int</span>[] breaks = lineBreaks.breaks;</span><br><span class="line"> <span class="keyword">final</span> <span class="keyword">float</span>[] lineWidths = lineBreaks.widths;</span><br><span class="line"> <span class="keyword">final</span> <span class="keyword">float</span>[] ascents = lineBreaks.ascents;</span><br><span class="line"> <span class="keyword">final</span> <span class="keyword">float</span>[] descents = lineBreaks.descents;</span><br><span class="line"> <span class="keyword">final</span> <span class="keyword">int</span>[] flags = lineBreaks.flags;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这一段是根据前述步骤的宽度、行宽等信息，调用native的方法进行了折行处理，处理后的结果在lineBreaks中</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> remainingLineCount = mMaximumVisibleLineCount - mLineCount;</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">boolean</span> ellipsisMayBeApplied = ellipsize != <span class="keyword">null</span></span><br><span class="line">        &amp;&amp; (ellipsize == TextUtils.TruncateAt.END</span><br><span class="line">            || (mMaximumVisibleLineCount == <span class="number">1</span></span><br><span class="line">                    &amp;&amp; ellipsize != TextUtils.TruncateAt.MARQUEE));</span><br><span class="line"><span class="keyword">if</span> (<span class="number">0</span> &lt; remainingLineCount &amp;&amp; remainingLineCount &lt; breakCount</span><br><span class="line">        &amp;&amp; ellipsisMayBeApplied) &#123;</span><br><span class="line">    <span class="comment">// Calculate width and flag.</span></span><br><span class="line">    <span class="keyword">float</span> width = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> flag = <span class="number">0</span>; <span class="comment">// XXX May need to also have starting hyphen edit</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = remainingLineCount - <span class="number">1</span>; i &lt; breakCount; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (i == breakCount - <span class="number">1</span>) &#123;</span><br><span class="line">            width += lineWidths[i];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = (i == <span class="number">0</span> ? <span class="number">0</span> : breaks[i - <span class="number">1</span>]); j &lt; breaks[i]; j++) &#123;</span><br><span class="line">                width += widths.get(j);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        flag |= flags[i] &amp; TAB_MASK;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Treat the last line and overflowed lines as a single line.</span></span><br><span class="line">    breaks[remainingLineCount - <span class="number">1</span>] = breaks[breakCount - <span class="number">1</span>];</span><br><span class="line">    lineWidths[remainingLineCount - <span class="number">1</span>] = width;</span><br><span class="line">    flags[remainingLineCount - <span class="number">1</span>] = flag;</span><br><span class="line"></span><br><span class="line">    breakCount = remainingLineCount;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这里主要是对末行以及省略的相应处理</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">int</span> here = paraStart;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> fmTop = <span class="number">0</span>, fmBottom = <span class="number">0</span>, fmAscent = <span class="number">0</span>, fmDescent = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> fmCacheIndex = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> spanEndCacheIndex = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> breakIndex = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> spanStart = paraStart, spanEnd; spanStart &lt; paraEnd; spanStart = spanEnd) &#123;</span><br><span class="line">        <span class="comment">// retrieve end of span</span></span><br><span class="line">        spanEnd = spanEndCache[spanEndCacheIndex++];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// retrieve cached metrics, order matches above</span></span><br><span class="line">        fm.top = fmCache[fmCacheIndex * <span class="number">4</span> + <span class="number">0</span>];</span><br><span class="line">        fm.bottom = fmCache[fmCacheIndex * <span class="number">4</span> + <span class="number">1</span>];</span><br><span class="line">        fm.ascent = fmCache[fmCacheIndex * <span class="number">4</span> + <span class="number">2</span>];</span><br><span class="line">        fm.descent = fmCache[fmCacheIndex * <span class="number">4</span> + <span class="number">3</span>];</span><br><span class="line">        fmCacheIndex++;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (fm.top &lt; fmTop) &#123;</span><br><span class="line">            fmTop = fm.top;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (fm.ascent &lt; fmAscent) &#123;</span><br><span class="line">            fmAscent = fm.ascent;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (fm.descent &gt; fmDescent) &#123;</span><br><span class="line">            fmDescent = fm.descent;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (fm.bottom &gt; fmBottom) &#123;</span><br><span class="line">            fmBottom = fm.bottom;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// skip breaks ending before current span range</span></span><br><span class="line">        <span class="keyword">while</span> (breakIndex &lt; breakCount &amp;&amp; paraStart + breaks[breakIndex] &lt; spanStart) &#123;</span><br><span class="line">            breakIndex++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (breakIndex &lt; breakCount &amp;&amp; paraStart + breaks[breakIndex] &lt;= spanEnd) &#123;</span><br><span class="line">            <span class="keyword">int</span> endPos = paraStart + breaks[breakIndex];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">boolean</span> moreChars = (endPos &lt; bufEnd);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> ascent = fallbackLineSpacing</span><br><span class="line">                    ? Math.min(fmAscent, Math.round(ascents[breakIndex]))</span><br><span class="line">                    : fmAscent;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> descent = fallbackLineSpacing</span><br><span class="line">                    ? Math.max(fmDescent, Math.round(descents[breakIndex]))</span><br><span class="line">                    : fmDescent;</span><br><span class="line">            v = out(source, here, endPos,</span><br><span class="line">                    ascent, descent, fmTop, fmBottom,</span><br><span class="line">                    v, spacingmult, spacingadd, chooseHt, chooseHtv, fm,</span><br><span class="line">                    flags[breakIndex], needMultiply, measuredPara, bufEnd,</span><br><span class="line">                    includepad, trackpad, addLastLineSpacing, chs, widths.getRawArray(),</span><br><span class="line">                    paraStart, ellipsize, ellipsizedWidth, lineWidths[breakIndex],</span><br><span class="line">                    paint, moreChars);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (endPos &lt; spanEnd) &#123;</span><br><span class="line">                <span class="comment">// preserve metrics for current span</span></span><br><span class="line">                fmTop = fm.top;</span><br><span class="line">                fmBottom = fm.bottom;</span><br><span class="line">                fmAscent = fm.ascent;</span><br><span class="line">                fmDescent = fm.descent;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                fmTop = fmBottom = fmAscent = fmDescent = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            here = endPos;</span><br><span class="line">            breakIndex++;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (mLineCount &gt;= mMaximumVisibleLineCount &amp;&amp; mEllipsized) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (paraEnd == bufEnd) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这一段是对段落中的Span和这行进行处理，其中fmCache是前面PrecomputeText在测量时已经测算好的各个Span在top/bottom/ascent/descent这几个维度上的值，并缓存在fmCache中，因此在这里需要计算某个段落的字体属性时，直接从fmCache中取出即可</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((bufEnd == bufStart || source.charAt(bufEnd - <span class="number">1</span>) == CHAR_NEW_LINE)</span><br><span class="line">                    &amp;&amp; mLineCount &lt; mMaximumVisibleLineCount) &#123;</span><br><span class="line">                <span class="keyword">final</span> MeasuredParagraph measuredPara =</span><br><span class="line">                        MeasuredParagraph.buildForBidi(source, bufEnd, bufEnd, textDir, <span class="keyword">null</span>);</span><br><span class="line">                paint.getFontMetricsInt(fm);</span><br><span class="line">                v = out(source,</span><br><span class="line">                        bufEnd, bufEnd, fm.ascent, fm.descent,</span><br><span class="line">                        fm.top, fm.bottom,</span><br><span class="line">                        v,</span><br><span class="line">                        spacingmult, spacingadd, <span class="keyword">null</span>,</span><br><span class="line">                        <span class="keyword">null</span>, fm, <span class="number">0</span>,</span><br><span class="line">                        needMultiply, measuredPara, bufEnd,</span><br><span class="line">                        includepad, trackpad, addLastLineSpacing, <span class="keyword">null</span>,</span><br><span class="line">                        <span class="keyword">null</span>, bufStart, ellipsize,</span><br><span class="line">                        ellipsizedWidth, <span class="number">0</span>, paint, <span class="keyword">false</span>);</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>注意最后这一段的成立条件：结束为止和起始位置相等，并且前一个字符是换行符，那证明是一个新的空白段落，也需要作为一个单独的段落进行单独处理</li>
+</ul>
+<h3 id="StaticLayout-out"><a href="#StaticLayout-out" class="headerlink" title="StaticLayout.out()"></a>StaticLayout.out()</h3><p>上面已经看完了整体的StaticLayout.generate()函数，其中看到有对out()函数的调用，out()函数完整的签名如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">out</span><span class="params">(<span class="keyword">final</span> CharSequence text, <span class="keyword">final</span> <span class="keyword">int</span> start, <span class="keyword">final</span> <span class="keyword">int</span> end, <span class="keyword">int</span> above, <span class="keyword">int</span> below,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">int</span> top, <span class="keyword">int</span> bottom, <span class="keyword">int</span> v, <span class="keyword">final</span> <span class="keyword">float</span> spacingmult, <span class="keyword">final</span> <span class="keyword">float</span> spacingadd,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> LineHeightSpan[] chooseHt, <span class="keyword">final</span> <span class="keyword">int</span>[] chooseHtv, <span class="keyword">final</span> Paint.FontMetricsInt fm,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> <span class="keyword">int</span> flags, <span class="keyword">final</span> <span class="keyword">boolean</span> needMultiply, <span class="meta">@NonNull</span> <span class="keyword">final</span> MeasuredParagraph measured,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> <span class="keyword">int</span> bufEnd, <span class="keyword">final</span> <span class="keyword">boolean</span> includePad, <span class="keyword">final</span> <span class="keyword">boolean</span> trackPad,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> <span class="keyword">boolean</span> addLastLineLineSpacing, <span class="keyword">final</span> <span class="keyword">char</span>[] chs, <span class="keyword">final</span> <span class="keyword">float</span>[] widths,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> <span class="keyword">int</span> widthStart, <span class="keyword">final</span> TextUtils.TruncateAt ellipsize, <span class="keyword">final</span> <span class="keyword">float</span> ellipsisWidth,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> <span class="keyword">float</span> textWidth, <span class="keyword">final</span> TextPaint paint, <span class="keyword">final</span> <span class="keyword">boolean</span> moreChars)</span></span></span><br></pre></td></tr></table></figure>
+<p>参数非常多，但看参数名基本能看出和此前的generate()函数基本是对应的<br>接下来分段看下它做了什么</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> j = mLineCount;</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> off = j * mColumns;</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> want = off + mColumns + TOP;</span><br><span class="line"><span class="keyword">int</span>[] lines = mLines;</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> dir = measured.getParagraphDir();</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (want &gt;= lines.length) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span>[] grow = ArrayUtils.newUnpaddedIntArray(GrowingArrayUtils.growSize(want));</span><br><span class="line">    System.arraycopy(lines, <span class="number">0</span>, grow, <span class="number">0</span>, lines.length);</span><br><span class="line">    mLines = grow;</span><br><span class="line">    lines = grow;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (j &gt;= mLineDirections.length) &#123;</span><br><span class="line">    <span class="keyword">final</span> Directions[] grow = ArrayUtils.newUnpaddedArray(Directions.class,</span><br><span class="line">            GrowingArrayUtils.growSize(j));</span><br><span class="line">    System.arraycopy(mLineDirections, <span class="number">0</span>, grow, <span class="number">0</span>, mLineDirections.length);</span><br><span class="line">    mLineDirections = grow;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第1部分是判断mLines/mLineDirections数组是否需要扩容以及在需要时进行扩容操作，mLines数组中存储的是每行的信息，包括每一行的信息包括START/TOP/DESCENT/HYPHEN/ELLIPSIS_START/ELLIPSIS_COUNT</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (chooseHt != <span class="keyword">null</span>) &#123;</span><br><span class="line">    fm.ascent = above;</span><br><span class="line">    fm.descent = below;</span><br><span class="line">    fm.top = top;</span><br><span class="line">    fm.bottom = bottom;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; chooseHt.length; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (chooseHt[i] <span class="keyword">instanceof</span> LineHeightSpan.WithDensity) &#123;</span><br><span class="line">            ((LineHeightSpan.WithDensity) chooseHt[i])</span><br><span class="line">                    .chooseHeight(text, start, end, chooseHtv[i], v, fm, paint);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            chooseHt[i].chooseHeight(text, start, end, chooseHtv[i], v, fm);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    above = fm.ascent;</span><br><span class="line">    below = fm.descent;</span><br><span class="line">    top = fm.top;</span><br><span class="line">    bottom = fm.bottom;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第2部分是对高度进行处理，得到的结果存储在above/below/top/bottom变量中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (ellipsize != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="comment">// If there is only one line, then do any type of ellipsis except when it is MARQUEE</span></span><br><span class="line">    <span class="comment">// if there are multiple lines, just allow END ellipsis on the last line</span></span><br><span class="line">    <span class="keyword">boolean</span> forceEllipsis = moreChars &amp;&amp; (mLineCount + <span class="number">1</span> == mMaximumVisibleLineCount);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> doEllipsis =</span><br><span class="line">            (((mMaximumVisibleLineCount == <span class="number">1</span> &amp;&amp; moreChars) || (firstLine &amp;&amp; !moreChars)) &amp;&amp;</span><br><span class="line">                    ellipsize != TextUtils.TruncateAt.MARQUEE) ||</span><br><span class="line">            (!firstLine &amp;&amp; (currentLineIsTheLastVisibleOne || !moreChars) &amp;&amp;</span><br><span class="line">                    ellipsize == TextUtils.TruncateAt.END);</span><br><span class="line">    <span class="keyword">if</span> (doEllipsis) &#123;</span><br><span class="line">        calculateEllipsis(start, end, widths, widthStart,</span><br><span class="line">                ellipsisWidth, ellipsize, j,</span><br><span class="line">                textWidth, paint, forceEllipsis);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第3部分是对省略的计算和处理</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">boolean</span> lastLine;</span><br><span class="line"><span class="keyword">if</span> (mEllipsized) &#123;</span><br><span class="line">    lastLine = <span class="keyword">true</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> lastCharIsNewLine = widthStart != bufEnd &amp;&amp; bufEnd &gt; <span class="number">0</span></span><br><span class="line">            &amp;&amp; text.charAt(bufEnd - <span class="number">1</span>) == CHAR_NEW_LINE;</span><br><span class="line">    <span class="keyword">if</span> (end == bufEnd &amp;&amp; !lastCharIsNewLine) &#123;</span><br><span class="line">        lastLine = <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (start == bufEnd &amp;&amp; lastCharIsNewLine) &#123;</span><br><span class="line">        lastLine = <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        lastLine = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (firstLine) &#123;</span><br><span class="line">    <span class="keyword">if</span> (trackPad) &#123;</span><br><span class="line">        mTopPadding = top - above;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (includePad) &#123;</span><br><span class="line">        above = top;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> extra;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (lastLine) &#123;</span><br><span class="line">    <span class="keyword">if</span> (trackPad) &#123;</span><br><span class="line">        mBottomPadding = bottom - below;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (includePad) &#123;</span><br><span class="line">        below = bottom;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (needMultiply &amp;&amp; (addLastLineLineSpacing || !lastLine)) &#123;</span><br><span class="line">    <span class="keyword">double</span> ex = (below - above) * (spacingmult - <span class="number">1</span>) + spacingadd;</span><br><span class="line">    <span class="keyword">if</span> (ex &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        extra = (<span class="keyword">int</span>)(ex + EXTRA_ROUNDING);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        extra = -(<span class="keyword">int</span>)(-ex + EXTRA_ROUNDING);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    extra = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第4部分是对首行末行的特殊处理，因为要考虑上下留白；还有对行间距的特殊处理</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">lines[off + START] = start;</span><br><span class="line">  lines[off + TOP] = v;</span><br><span class="line">  lines[off + DESCENT] = below + extra;</span><br><span class="line">  lines[off + EXTRA] = extra;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// special case for non-ellipsized last visible line when maxLines is set</span></span><br><span class="line">  <span class="comment">// store the height as if it was ellipsized</span></span><br><span class="line">  <span class="keyword">if</span> (!mEllipsized &amp;&amp; currentLineIsTheLastVisibleOne) &#123;</span><br><span class="line">      <span class="comment">// below calculation as if it was the last line</span></span><br><span class="line">      <span class="keyword">int</span> maxLineBelow = includePad ? bottom : below;</span><br><span class="line">      <span class="comment">// similar to the calculation of v below, without the extra.</span></span><br><span class="line">      mMaxLineHeight = v + (maxLineBelow - above);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  v += (below - above) + extra;</span><br><span class="line">  lines[off + mColumns + START] = end;</span><br><span class="line">  lines[off + mColumns + TOP] = v;</span><br><span class="line"></span><br><span class="line">  lines[off + TAB] |= flags &amp; TAB_MASK;</span><br><span class="line">  lines[off + HYPHEN] = flags;</span><br><span class="line">  lines[off + DIR] |= dir &lt;&lt; DIR_SHIFT;</span><br><span class="line">  mLineDirections[j] = measured.getDirections(start - widthStart, end - widthStart);</span><br><span class="line"></span><br><span class="line">  mLineCount++;</span><br><span class="line">  <span class="keyword">return</span> v;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第5部分就是将处理完的每一行的信息，都记录到lines数组中了</li>
+</ul>
+<p><strong>从这里就能看出out函数的作用是对Layout中的每一行文本进行分析，最重要的产出就是得到mLines数组</strong></p>
+<h3 id="Layout-draw"><a href="#Layout-draw" class="headerlink" title="Layout.draw()"></a>Layout.draw()</h3><p>在上一篇TextView的整体流程中我们看到，TextView的onDraw()执行过程中，最终实际上是通过Layout.draw()函数完成的，而在Layout前面的分析中我们已经得到了每一行的信息，所以接下来看下Layout.draw()函数是怎么执行的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">(Canvas canvas, Path highlight, Paint highlightPaint,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> cursorOffsetVertical)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> lineRange = getLineRangeForDraw(canvas);</span><br><span class="line">    <span class="keyword">int</span> firstLine = TextUtils.unpackRangeStartFromLong(lineRange);</span><br><span class="line">    <span class="keyword">int</span> lastLine = TextUtils.unpackRangeEndFromLong(lineRange);</span><br><span class="line">    <span class="keyword">if</span> (lastLine &lt; <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    drawBackground(canvas, highlight, highlightPaint, cursorOffsetVertical,</span><br><span class="line">            firstLine, lastLine);</span><br><span class="line">    drawText(canvas, firstLine, lastLine);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Layout.draw()实际上分成了两部分，drawBackground()和drawText()，下面看下它们的实现：</p>
+<h3 id="Layout-drawBackground"><a href="#Layout-drawBackground" class="headerlink" title="Layout.drawBackground()"></a>Layout.drawBackground()</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">public void drawBackground(Canvas canvas, Path highlight, Paint highlightPaint,</span><br><span class="line">        int cursorOffsetVertical, int firstLine, int lastLine) &#123;</span><br><span class="line">    &#x2F;&#x2F; First, draw LineBackgroundSpans.</span><br><span class="line">    &#x2F;&#x2F; LineBackgroundSpans know nothing about the alignment, margins, or</span><br><span class="line">    &#x2F;&#x2F; direction of the layout or line.  XXX: Should they?</span><br><span class="line">    &#x2F;&#x2F; They are evaluated at each line.</span><br><span class="line">    if (mSpannedText) &#123;</span><br><span class="line">        if (mLineBackgroundSpans &#x3D;&#x3D; null) &#123;</span><br><span class="line">            mLineBackgroundSpans &#x3D; new SpanSet&lt;LineBackgroundSpan&gt;(LineBackgroundSpan.class);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Spanned buffer &#x3D; (Spanned) mText;</span><br><span class="line">        int textLength &#x3D; buffer.length();</span><br><span class="line">        mLineBackgroundSpans.init(buffer, 0, textLength);</span><br><span class="line"></span><br><span class="line">        if (mLineBackgroundSpans.numberOfSpans &gt; 0) &#123;</span><br><span class="line">            int previousLineBottom &#x3D; getLineTop(firstLine);</span><br><span class="line">            int previousLineEnd &#x3D; getLineStart(firstLine);</span><br><span class="line">            ParagraphStyle[] spans &#x3D; NO_PARA_SPANS;</span><br><span class="line">            int spansLength &#x3D; 0;</span><br><span class="line">            TextPaint paint &#x3D; mPaint;</span><br><span class="line">            int spanEnd &#x3D; 0;</span><br><span class="line">            final int width &#x3D; mWidth;</span><br><span class="line">            for (int i &#x3D; firstLine; i &lt;&#x3D; lastLine; i++) &#123;</span><br><span class="line">                int start &#x3D; previousLineEnd;</span><br><span class="line">                int end &#x3D; getLineStart(i + 1);</span><br><span class="line">                previousLineEnd &#x3D; end;</span><br><span class="line"></span><br><span class="line">                int ltop &#x3D; previousLineBottom;</span><br><span class="line">                int lbottom &#x3D; getLineTop(i + 1);</span><br><span class="line">                previousLineBottom &#x3D; lbottom;</span><br><span class="line">                int lbaseline &#x3D; lbottom - getLineDescent(i);</span><br><span class="line"></span><br><span class="line">                if (start &gt;&#x3D; spanEnd) &#123;</span><br><span class="line">                    &#x2F;&#x2F; These should be infrequent, so we&#39;ll use this so that</span><br><span class="line">                    &#x2F;&#x2F; we don&#39;t have to check as often.</span><br><span class="line">                    spanEnd &#x3D; mLineBackgroundSpans.getNextTransition(start, textLength);</span><br><span class="line">                    &#x2F;&#x2F; All LineBackgroundSpans on a line contribute to its background.</span><br><span class="line">                    spansLength &#x3D; 0;</span><br><span class="line">                    &#x2F;&#x2F; Duplication of the logic of getParagraphSpans</span><br><span class="line">                    if (start !&#x3D; end || start &#x3D;&#x3D; 0) &#123;</span><br><span class="line">                        &#x2F;&#x2F; Equivalent to a getSpans(start, end), but filling the &#39;spans&#39; local</span><br><span class="line">                        &#x2F;&#x2F; array instead to reduce memory allocation</span><br><span class="line">                        for (int j &#x3D; 0; j &lt; mLineBackgroundSpans.numberOfSpans; j++) &#123;</span><br><span class="line">                            &#x2F;&#x2F; equal test is valid since both intervals are not empty by</span><br><span class="line">                            &#x2F;&#x2F; construction</span><br><span class="line">                            if (mLineBackgroundSpans.spanStarts[j] &gt;&#x3D; end ||</span><br><span class="line">                                    mLineBackgroundSpans.spanEnds[j] &lt;&#x3D; start) continue;</span><br><span class="line">                            spans &#x3D; GrowingArrayUtils.append(</span><br><span class="line">                                    spans, spansLength, mLineBackgroundSpans.spans[j]);</span><br><span class="line">                            spansLength++;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                for (int n &#x3D; 0; n &lt; spansLength; n++) &#123;</span><br><span class="line">                    LineBackgroundSpan lineBackgroundSpan &#x3D; (LineBackgroundSpan) spans[n];</span><br><span class="line">                    lineBackgroundSpan.drawBackground(canvas, paint, 0, width,</span><br><span class="line">                            ltop, lbaseline, lbottom,</span><br><span class="line">                            buffer, start, end, i);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        mLineBackgroundSpans.recycle();</span><br><span class="line">    &#125;</span><br><span class="line">    &#x2F;&#x2F; There can be a highlight even without spans if we are drawing</span><br><span class="line">    &#x2F;&#x2F; a non-spanned transformation of a spanned editing buffer.</span><br><span class="line">    if (highlight !&#x3D; null) &#123;</span><br><span class="line">        if (cursorOffsetVertical !&#x3D; 0) canvas.translate(0, cursorOffsetVertical);</span><br><span class="line">        canvas.drawPath(highlight, highlightPaint);</span><br><span class="line">        if (cursorOffsetVertical !&#x3D; 0) canvas.translate(0, -cursorOffsetVertical);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>代码不长，可以看到Layout的drawBackground()实际上是通过LineBackgroundSpan.drawBackground()来完成的，而LineBackgroundSpan只是一个接口，在Android源码中并没有实现类，因此drawBackground()的实际绘制效果是使用时自己定义的</li>
+</ul>
+<h3 id="Layout-drawText"><a href="#Layout-drawText" class="headerlink" title="Layout.drawText()"></a>Layout.drawText()</h3><p><img src="https://upload-images.jianshu.io/upload_images/5866715-104ca2a82c54aaac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>drawText()方法整体内容如图，主要的工作在for循环中，从注释中能看出，drawText()的过程是，逐行绘制，下面看下这个for循环内部的逻辑：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> start = previousLineEnd;</span><br><span class="line">previousLineEnd = getLineStart(lineNum + <span class="number">1</span>);</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">boolean</span> justify = isJustificationRequired(lineNum);</span><br><span class="line"><span class="keyword">int</span> end = getLineVisibleEnd(lineNum, start, previousLineEnd);</span><br><span class="line">paint.setHyphenEdit(getHyphen(lineNum));</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> ltop = previousLineBottom;</span><br><span class="line"><span class="keyword">int</span> lbottom = getLineTop(lineNum + <span class="number">1</span>);</span><br><span class="line">previousLineBottom = lbottom;</span><br><span class="line"><span class="keyword">int</span> lbaseline = lbottom - getLineDescent(lineNum);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> dir = getParagraphDirection(lineNum);</span><br><span class="line"><span class="keyword">int</span> left = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> right = mWidth;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (mSpannedText) &#123;</span><br><span class="line">    Spanned sp = (Spanned) buf;</span><br><span class="line">    <span class="keyword">int</span> textLength = buf.length();</span><br><span class="line">    <span class="keyword">boolean</span> isFirstParaLine = (start == <span class="number">0</span> || buf.charAt(start - <span class="number">1</span>) == <span class="string">&#x27;\n&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// New batch of paragraph styles, collect into spans array.</span></span><br><span class="line">    <span class="comment">// Compute the alignment, last alignment style wins.</span></span><br><span class="line">    <span class="comment">// Reset tabStops, we&#x27;ll rebuild if we encounter a line with</span></span><br><span class="line">    <span class="comment">// tabs.</span></span><br><span class="line">    <span class="comment">// We expect paragraph spans to be relatively infrequent, use</span></span><br><span class="line">    <span class="comment">// spanEnd so that we can check less frequently.  Since</span></span><br><span class="line">    <span class="comment">// paragraph styles ought to apply to entire paragraphs, we can</span></span><br><span class="line">    <span class="comment">// just collect the ones present at the start of the paragraph.</span></span><br><span class="line">    <span class="comment">// If spanEnd is before the end of the paragraph, that&#x27;s not</span></span><br><span class="line">    <span class="comment">// our problem.</span></span><br><span class="line">    <span class="keyword">if</span> (start &gt;= spanEnd &amp;&amp; (lineNum == firstLine || isFirstParaLine)) &#123;</span><br><span class="line">        spanEnd = sp.nextSpanTransition(start, textLength,</span><br><span class="line">                                        ParagraphStyle.class);</span><br><span class="line">        spans = getParagraphSpans(sp, start, spanEnd, ParagraphStyle.class);</span><br><span class="line"></span><br><span class="line">        paraAlign = mAlignment;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> n = spans.length - <span class="number">1</span>; n &gt;= <span class="number">0</span>; n--) &#123;</span><br><span class="line">            <span class="keyword">if</span> (spans[n] <span class="keyword">instanceof</span> AlignmentSpan) &#123;</span><br><span class="line">                paraAlign = ((AlignmentSpan) spans[n]).getAlignment();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        tabStopsIsInitialized = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Draw all leading margin spans.  Adjust left or right according</span></span><br><span class="line">    <span class="comment">// to the paragraph direction of the line.</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> length = spans.length;</span><br><span class="line">    <span class="keyword">boolean</span> useFirstLineMargin = isFirstParaLine;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> n = <span class="number">0</span>; n &lt; length; n++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (spans[n] <span class="keyword">instanceof</span> LeadingMarginSpan2) &#123;</span><br><span class="line">            <span class="keyword">int</span> count = ((LeadingMarginSpan2) spans[n]).getLeadingMarginLineCount();</span><br><span class="line">            <span class="keyword">int</span> startLine = getLineForOffset(sp.getSpanStart(spans[n]));</span><br><span class="line">            <span class="comment">// if there is more than one LeadingMarginSpan2, use</span></span><br><span class="line">            <span class="comment">// the count that is greatest</span></span><br><span class="line">            <span class="keyword">if</span> (lineNum &lt; startLine + count) &#123;</span><br><span class="line">                useFirstLineMargin = <span class="keyword">true</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> n = <span class="number">0</span>; n &lt; length; n++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (spans[n] <span class="keyword">instanceof</span> LeadingMarginSpan) &#123;</span><br><span class="line">            LeadingMarginSpan margin = (LeadingMarginSpan) spans[n];</span><br><span class="line">            <span class="keyword">if</span> (dir == DIR_RIGHT_TO_LEFT) &#123;</span><br><span class="line">                margin.drawLeadingMargin(canvas, paint, right, dir, ltop,</span><br><span class="line">                                         lbaseline, lbottom, buf,</span><br><span class="line">                                         start, end, isFirstParaLine, <span class="keyword">this</span>);</span><br><span class="line">                right -= margin.getLeadingMargin(useFirstLineMargin);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                margin.drawLeadingMargin(canvas, paint, left, dir, ltop,</span><br><span class="line">                                         lbaseline, lbottom, buf,</span><br><span class="line">                                         start, end, isFirstParaLine, <span class="keyword">this</span>);</span><br><span class="line">                left += margin.getLeadingMargin(useFirstLineMargin);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第1部分，主要是判断是不是Spanned，是的话需要获取影响ParagraphStyle的Span，然后判断其中是否有LeadingMarginSpan，有的话会调用其drawLeadingMargin()方法来绘制其段首的缩进效果</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">boolean hasTab &#x3D; getLineContainsTab(lineNum);</span><br><span class="line">&#x2F;&#x2F; Can&#39;t tell if we have tabs for sure, currently</span><br><span class="line">if (hasTab &amp;&amp; !tabStopsIsInitialized) &#123;</span><br><span class="line">    if (tabStops &#x3D;&#x3D; null) &#123;</span><br><span class="line">        tabStops &#x3D; new TabStops(TAB_INCREMENT, spans);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        tabStops.reset(TAB_INCREMENT, spans);</span><br><span class="line">    &#125;</span><br><span class="line">    tabStopsIsInitialized &#x3D; true;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; Determine whether the line aligns to normal, opposite, or center.</span><br><span class="line">Alignment align &#x3D; paraAlign;</span><br><span class="line">if (align &#x3D;&#x3D; Alignment.ALIGN_LEFT) &#123;</span><br><span class="line">    align &#x3D; (dir &#x3D;&#x3D; DIR_LEFT_TO_RIGHT) ?</span><br><span class="line">        Alignment.ALIGN_NORMAL : Alignment.ALIGN_OPPOSITE;</span><br><span class="line">&#125; else if (align &#x3D;&#x3D; Alignment.ALIGN_RIGHT) &#123;</span><br><span class="line">    align &#x3D; (dir &#x3D;&#x3D; DIR_LEFT_TO_RIGHT) ?</span><br><span class="line">        Alignment.ALIGN_OPPOSITE : Alignment.ALIGN_NORMAL;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int x;</span><br><span class="line">final int indentWidth;</span><br><span class="line">if (align &#x3D;&#x3D; Alignment.ALIGN_NORMAL) &#123;</span><br><span class="line">    if (dir &#x3D;&#x3D; DIR_LEFT_TO_RIGHT) &#123;</span><br><span class="line">        indentWidth &#x3D; getIndentAdjust(lineNum, Alignment.ALIGN_LEFT);</span><br><span class="line">        x &#x3D; left + indentWidth;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        indentWidth &#x3D; -getIndentAdjust(lineNum, Alignment.ALIGN_RIGHT);</span><br><span class="line">        x &#x3D; right - indentWidth;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    int max &#x3D; (int)getLineExtent(lineNum, tabStops, false);</span><br><span class="line">    if (align &#x3D;&#x3D; Alignment.ALIGN_OPPOSITE) &#123;</span><br><span class="line">        if (dir &#x3D;&#x3D; DIR_LEFT_TO_RIGHT) &#123;</span><br><span class="line">            indentWidth &#x3D; -getIndentAdjust(lineNum, Alignment.ALIGN_RIGHT);</span><br><span class="line">            x &#x3D; right - max - indentWidth;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            indentWidth &#x3D; getIndentAdjust(lineNum, Alignment.ALIGN_LEFT);</span><br><span class="line">            x &#x3D; left - max + indentWidth;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123; &#x2F;&#x2F; Alignment.ALIGN_CENTER</span><br><span class="line">        indentWidth &#x3D; getIndentAdjust(lineNum, Alignment.ALIGN_CENTER);</span><br><span class="line">        max &#x3D; max &amp; ~1;</span><br><span class="line">        x &#x3D; ((right + left - max) &gt;&gt; 1) + indentWidth;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Directions directions &#x3D; getLineDirections(lineNum);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第2部分，确定该行中是否有Tab，以及对其方式</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (directions == DIRS_ALL_LEFT_TO_RIGHT &amp;&amp; !mSpannedText &amp;&amp; !hasTab &amp;&amp; !justify) &#123;</span><br><span class="line">     <span class="comment">// <span class="doctag">XXX:</span> assumes there&#x27;s nothing additional to be done</span></span><br><span class="line">     canvas.drawText(buf, start, end, x, lbaseline, paint);</span><br><span class="line"> &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">     tl.set(paint, buf, start, end, dir, directions, hasTab, tabStops);</span><br><span class="line">     <span class="keyword">if</span> (justify) &#123;</span><br><span class="line">         tl.justify(right - left - indentWidth);</span><br><span class="line">     &#125;</span><br><span class="line">     tl.draw(canvas, x, ltop, lbaseline, lbottom);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第3部分，根据前面的信息，如果是布局从左到右并且是普通文本而且没有tab而且不需要对齐，则调用canvas.drawText来绘制，否则调用的是TextLine的draw()方法来进行绘制</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android%E6%BA%90%E7%A0%81/" rel="tag"># Android源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/16/Android-TextView%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90%E4%B9%8B%E9%A1%B6%E5%B1%82%E6%B5%81%E7%A8%8B/" rel="next" title="Android TextView源码浅析之顶层流程">
+                <i class="fa fa-chevron-left"></i> Android TextView源码浅析之顶层流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#OverView"><span class="nav-number">1.</span> <span class="nav-text">OverView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TextView-makeNewLayout"><span class="nav-number">2.</span> <span class="nav-text">TextView.makeNewLayout()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TextView-makeSingleLayout-%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">TextView.makeSingleLayout()方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StaticLayout-generate"><span class="nav-number">4.</span> <span class="nav-text">StaticLayout.generate()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StaticLayout-out"><span class="nav-number">5.</span> <span class="nav-text">StaticLayout.out()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout-draw"><span class="nav-number">6.</span> <span class="nav-text">Layout.draw()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout-drawBackground"><span class="nav-number">7.</span> <span class="nav-text">Layout.drawBackground()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout-drawText"><span class="nav-number">8.</span> <span class="nav-text">Layout.drawText()</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

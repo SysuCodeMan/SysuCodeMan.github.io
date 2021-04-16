@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android源码学习," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OverViewFrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。 onMeasure一个布局容器的工作原理无非就是onMeasure()&#x2F;onLayout()&#x2F;onDraw()3个阶段的处理，先来直接看下onMeasure()的实现： 123456789101112131415161718192021222324252627282">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android TableLayout源码学习">
+<meta property="og:url" content="http://example.com/2021/04/16/Android-TableLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="OverViewFrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。 onMeasure一个布局容器的工作原理无非就是onMeasure()&#x2F;onLayout()&#x2F;onDraw()3个阶段的处理，先来直接看下onMeasure()的实现： 123456789101112131415161718192021222324252627282">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-04-16T09:40:50.000Z">
+<meta property="article:modified_time" content="2021-04-16T09:42:00.323Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Android源码学习">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/16/Android-TableLayout源码学习/"/>
+
+
+
+
+
+  <title>Android TableLayout源码学习 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/16/Android-TableLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android TableLayout源码学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-04-16T17:40:50+08:00">
+                2021-04-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="OverView"><a href="#OverView" class="headerlink" title="OverView"></a>OverView</h3><p>FrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。</p>
+<h3 id="onMeasure"><a href="#onMeasure" class="headerlink" title="onMeasure"></a>onMeasure</h3><p>一个布局容器的工作原理无非就是onMeasure()/onLayout()/onDraw()3个阶段的处理，先来直接看下onMeasure()的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> count = getChildCount();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> measureMatchParentChildren =</span><br><span class="line">            MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.EXACTLY ||</span><br><span class="line">            MeasureSpec.getMode(heightMeasureSpec) != MeasureSpec.EXACTLY;</span><br><span class="line">    mMatchParentChildren.clear();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> maxHeight = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> maxWidth = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> childState = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        <span class="keyword">final</span> View child = getChildAt(i);</span><br><span class="line">        <span class="keyword">if</span> (mMeasureAllChildren || child.getVisibility() != GONE) &#123;</span><br><span class="line">            measureChildWithMargins(child, widthMeasureSpec, <span class="number">0</span>, heightMeasureSpec, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">final</span> LayoutParams lp = (LayoutParams) child.getLayoutParams();</span><br><span class="line">            maxWidth = Math.max(maxWidth,</span><br><span class="line">                    child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);</span><br><span class="line">            maxHeight = Math.max(maxHeight,</span><br><span class="line">                    child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);</span><br><span class="line">            childState = combineMeasuredStates(childState, child.getMeasuredState());</span><br><span class="line">            <span class="keyword">if</span> (measureMatchParentChildren) &#123;</span><br><span class="line">                <span class="keyword">if</span> (lp.width == LayoutParams.MATCH_PARENT ||</span><br><span class="line">                        lp.height == LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                    mMatchParentChildren.add(child);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FrameLayout的onMeasure()过程比LinearLayout/RelativeLayout都要简洁，分成两部分，上面是第一部分的源码，其处理过程很简单：</p>
+<ul>
+<li>遍历一次子View，通过调用measureChildWithMargins()方法，完成了对子View的一次测量</li>
+<li>随后会判断子View是否需要match_parent，如需要将加入到mMatchParentChildren集合中，待下一阶段处理</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line"></span><br><span class="line">    count = mMatchParentChildren.size();</span><br><span class="line">    <span class="keyword">if</span> (count &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> View child = mMatchParentChildren.get(i);</span><br><span class="line">            <span class="keyword">final</span> MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> childWidthMeasureSpec;</span><br><span class="line">            <span class="keyword">if</span> (lp.width == LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> width = Math.max(<span class="number">0</span>, getMeasuredWidth()</span><br><span class="line">                        - getPaddingLeftWithForeground() - getPaddingRightWithForeground()</span><br><span class="line">                        - lp.leftMargin - lp.rightMargin);</span><br><span class="line">                childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(</span><br><span class="line">                        width, MeasureSpec.EXACTLY);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec,</span><br><span class="line">                        getPaddingLeftWithForeground() + getPaddingRightWithForeground() +</span><br><span class="line">                        lp.leftMargin + lp.rightMargin,</span><br><span class="line">                        lp.width);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> childHeightMeasureSpec;</span><br><span class="line">            <span class="keyword">if</span> (lp.height == LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> height = Math.max(<span class="number">0</span>, getMeasuredHeight()</span><br><span class="line">                        - getPaddingTopWithForeground() - getPaddingBottomWithForeground()</span><br><span class="line">                        - lp.topMargin - lp.bottomMargin);</span><br><span class="line">                childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(</span><br><span class="line">                        height, MeasureSpec.EXACTLY);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec,</span><br><span class="line">                        getPaddingTopWithForeground() + getPaddingBottomWithForeground() +</span><br><span class="line">                        lp.topMargin + lp.bottomMargin,</span><br><span class="line">                        lp.height);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            child.measure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在onMeasure()的第二部分，会将之前一次遍历中发现的需要将width或者height设置成match_parent的子View再进行一次处理，对其再进行一次正确宽高值的measure调用。</p>
+<h3 id="onLayout"><a href="#onLayout" class="headerlink" title="onLayout"></a>onLayout</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom)</span> </span>&#123;</span><br><span class="line">    layoutChildren(left, top, right, bottom, <span class="keyword">false</span> <span class="comment">/* no force left gravity */</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">void layoutChildren(int left, int top, int right, int bottom, boolean forceLeftGravity) &#123;</span><br><span class="line">    final int count &#x3D; getChildCount();</span><br><span class="line"></span><br><span class="line">    final int parentLeft &#x3D; getPaddingLeftWithForeground();</span><br><span class="line">    final int parentRight &#x3D; right - left - getPaddingRightWithForeground();</span><br><span class="line"></span><br><span class="line">    final int parentTop &#x3D; getPaddingTopWithForeground();</span><br><span class="line">    final int parentBottom &#x3D; bottom - top - getPaddingBottomWithForeground();</span><br><span class="line"></span><br><span class="line">    for (int i &#x3D; 0; i &lt; count; i++) &#123;</span><br><span class="line">        final View child &#x3D; getChildAt(i);</span><br><span class="line">        if (child.getVisibility() !&#x3D; GONE) &#123;</span><br><span class="line">            final LayoutParams lp &#x3D; (LayoutParams) child.getLayoutParams();</span><br><span class="line"></span><br><span class="line">            final int width &#x3D; child.getMeasuredWidth();</span><br><span class="line">            final int height &#x3D; child.getMeasuredHeight();</span><br><span class="line"></span><br><span class="line">            int childLeft;</span><br><span class="line">            int childTop;</span><br><span class="line"></span><br><span class="line">            int gravity &#x3D; lp.gravity;</span><br><span class="line">            if (gravity &#x3D;&#x3D; -1) &#123;</span><br><span class="line">                gravity &#x3D; DEFAULT_CHILD_GRAVITY;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            final int layoutDirection &#x3D; getLayoutDirection();</span><br><span class="line">            final int absoluteGravity &#x3D; Gravity.getAbsoluteGravity(gravity, layoutDirection);</span><br><span class="line">            final int verticalGravity &#x3D; gravity &amp; Gravity.VERTICAL_GRAVITY_MASK;</span><br><span class="line"></span><br><span class="line">            switch (absoluteGravity &amp; Gravity.HORIZONTAL_GRAVITY_MASK) &#123;</span><br><span class="line">                case Gravity.CENTER_HORIZONTAL:</span><br><span class="line">                    childLeft &#x3D; parentLeft + (parentRight - parentLeft - width) &#x2F; 2 +</span><br><span class="line">                    lp.leftMargin - lp.rightMargin;</span><br><span class="line">                    break;</span><br><span class="line">                case Gravity.RIGHT:</span><br><span class="line">                    if (!forceLeftGravity) &#123;</span><br><span class="line">                        childLeft &#x3D; parentRight - width - lp.rightMargin;</span><br><span class="line">                        break;</span><br><span class="line">                    &#125;</span><br><span class="line">                case Gravity.LEFT:</span><br><span class="line">                default:</span><br><span class="line">                    childLeft &#x3D; parentLeft + lp.leftMargin;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            switch (verticalGravity) &#123;</span><br><span class="line">                case Gravity.TOP:</span><br><span class="line">                    childTop &#x3D; parentTop + lp.topMargin;</span><br><span class="line">                    break;</span><br><span class="line">                case Gravity.CENTER_VERTICAL:</span><br><span class="line">                    childTop &#x3D; parentTop + (parentBottom - parentTop - height) &#x2F; 2 +</span><br><span class="line">                    lp.topMargin - lp.bottomMargin;</span><br><span class="line">                    break;</span><br><span class="line">                case Gravity.BOTTOM:</span><br><span class="line">                    childTop &#x3D; parentBottom - height - lp.bottomMargin;</span><br><span class="line">                    break;</span><br><span class="line">                default:</span><br><span class="line">                    childTop &#x3D; parentTop + lp.topMargin;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            child.layout(childLeft, childTop, childLeft + width, childTop + height);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FrameLayout的onLayout()过程也很清晰：</p>
+<ul>
+<li>遍历子View，根据gravity值的不同进行相应的childLeft/childTop值的处理</li>
+<li>通过调整后的childLeft/childTop值，调用child的layout方法，进行布局</li>
+</ul>
+<h3 id="onDraw"><a href="#onDraw" class="headerlink" title="onDraw"></a>onDraw</h3><p>FrameLayout没有重写onDraw()方法</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>相对LinearLayout和RelativeLayout而言，FrameLayout的功能比较简单，因此onMeasure()和onLayout()的实现都比较简洁，在onMeasure()过程，最好情况是测量一次子View，最坏情况是两次。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="tag"># Android源码学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/16/Android-GridLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="next" title="Android GridLayout源码学习">
+                <i class="fa fa-chevron-left"></i> Android GridLayout源码学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/04/16/Android-AbsoluteLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="prev" title="Android AbsoluteLayout源码学习">
+                Android AbsoluteLayout源码学习 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#OverView"><span class="nav-number">1.</span> <span class="nav-text">OverView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onMeasure"><span class="nav-number">2.</span> <span class="nav-text">onMeasure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onLayout"><span class="nav-number">3.</span> <span class="nav-text">onLayout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onDraw"><span class="nav-number">4.</span> <span class="nav-text">onDraw</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
