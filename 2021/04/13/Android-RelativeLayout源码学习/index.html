@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android源码学习," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OverviewRelativeLayout是Android中一种常用的布局，通过View之间的相互关系能够方便地确定子View的位置，通过源码的学习来看下Android是如何实现这一功能的。Android中的一个组件，工作原理主要在onMeasure(),onLayout(),onDraw()这3大阶段中。 ###onMeasure() 1234567protected void onMeasu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android RelativeLayout源码学习">
+<meta property="og:url" content="http://example.com/2021/04/13/Android-RelativeLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="OverviewRelativeLayout是Android中一种常用的布局，通过View之间的相互关系能够方便地确定子View的位置，通过源码的学习来看下Android是如何实现这一功能的。Android中的一个组件，工作原理主要在onMeasure(),onLayout(),onDraw()这3大阶段中。 ###onMeasure() 1234567protected void onMeasu">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-04-13T15:46:10.000Z">
+<meta property="article:modified_time" content="2021-04-13T15:48:28.332Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Android源码学习">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/13/Android-RelativeLayout源码学习/"/>
+
+
+
+
+
+  <title>Android RelativeLayout源码学习 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/13/Android-RelativeLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android RelativeLayout源码学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-04-13T23:46:10+08:00">
+                2021-04-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><p>RelativeLayout是Android中一种常用的布局，通过View之间的相互关系能够方便地确定子View的位置，通过源码的学习来看下Android是如何实现这一功能的。Android中的一个组件，工作原理主要在onMeasure(),onLayout(),onDraw()这3大阶段中。</p>
+<p>###onMeasure()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mDirtyHierarchy) &#123;</span><br><span class="line">            mDirtyHierarchy = <span class="keyword">false</span>;</span><br><span class="line">            sortChildren();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>测量过程的第一步是对子View进行排序</strong>，在这一步骤会设置一个标志位mDirtyHierarchy进行优化，下面看下sortChildren的具体实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">sortChildren</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> count = getChildCount();</span><br><span class="line">        <span class="keyword">if</span> (mSortedVerticalChildren == <span class="keyword">null</span> || mSortedVerticalChildren.length != count) &#123;</span><br><span class="line">            mSortedVerticalChildren = <span class="keyword">new</span> View[count];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mSortedHorizontalChildren == <span class="keyword">null</span> || mSortedHorizontalChildren.length != count) &#123;</span><br><span class="line">            mSortedHorizontalChildren = <span class="keyword">new</span> View[count];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> DependencyGraph graph = mGraph;</span><br><span class="line">        graph.clear();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            graph.add(getChildAt(i));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        graph.getSortedViews(mSortedVerticalChildren, RULES_VERTICAL);</span><br><span class="line">        graph.getSortedViews(mSortedHorizontalChildren, RULES_HORIZONTAL);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数包含以下步骤：</p>
+<ul>
+<li>初始化两个数组，分别用于记录水平方向和竖直方向的排序结果</li>
+<li>初始化一个依赖图DependencyGraph，将子View都加入到依赖图中</li>
+<li>调用DependencyGraph的getSortedViews方法，将两个方向的排序结果记录到对应数组中</li>
+</ul>
+<p>下面首先看下DependencyGraph的结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">DependencyGraph</span> </span>&#123;</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * List of all views in the graph.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">private</span> ArrayList&lt;Node&gt; mNodes = <span class="keyword">new</span> ArrayList&lt;Node&gt;();</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * List of nodes in the graph. Each node is identified by its</span></span><br><span class="line"><span class="comment">         * view id (see View#getId()).</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">private</span> SparseArray&lt;Node&gt; mKeyNodes = <span class="keyword">new</span> SparseArray&lt;Node&gt;();</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * Temporary data structure used to build the list of roots</span></span><br><span class="line"><span class="comment">         * for this graph.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">private</span> ArrayDeque&lt;Node&gt; mRoots = <span class="keyword">new</span> ArrayDeque&lt;Node&gt;();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果里每个成员代表的含义，其注释已经说清楚了；再具体看下Node的结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span> </span>&#123;</span><br><span class="line">            <span class="comment">/**</span></span><br><span class="line"><span class="comment">             * The view representing this node in the layout.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            View view;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/**</span></span><br><span class="line"><span class="comment">             * The list of dependents for this node; a dependent is a node</span></span><br><span class="line"><span class="comment">             * that needs this node to be processed first.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="keyword">final</span> ArrayMap&lt;Node, DependencyGraph&gt; dependents =</span><br><span class="line">                    <span class="keyword">new</span> ArrayMap&lt;Node, DependencyGraph&gt;();</span><br><span class="line"></span><br><span class="line">            <span class="comment">/**</span></span><br><span class="line"><span class="comment">             * The list of dependencies for this node.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="keyword">final</span> SparseArray&lt;Node&gt; dependencies = <span class="keyword">new</span> SparseArray&lt;Node&gt;();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据注释也能够明白每个成员的含义</p>
+<p>接下来看下DependencyGraph是如何实现getSortedViews方法的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getSortedViews</span><span class="params">(View[] sorted, <span class="keyword">int</span>... rules)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// 找出所有的不依赖其他节点的节点，即根节点</span></span><br><span class="line">            <span class="keyword">final</span> ArrayDeque&lt;Node&gt; roots = findRoots(rules);</span><br><span class="line">            <span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">            Node node;</span><br><span class="line">            <span class="comment">// 循环从根节点的队尾中取出元素</span></span><br><span class="line">            <span class="keyword">while</span> ((node = roots.pollLast()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">final</span> View view = node.view;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> key = view.getId();</span><br><span class="line">                <span class="comment">// 将该节点加入排序结果</span></span><br><span class="line">                sorted[index++] = view;</span><br><span class="line">                <span class="comment">// 取出该节点的所有伴随节点</span></span><br><span class="line">                <span class="keyword">final</span> ArrayMap&lt;Node, DependencyGraph&gt; dependents = node.dependents;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> count = dependents.size();</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">                    <span class="comment">// 遍历伴随节点</span></span><br><span class="line">                    <span class="keyword">final</span> Node dependent = dependents.keyAt(i);</span><br><span class="line">                    <span class="comment">// 取出伴随节点的所有依赖节点集合</span></span><br><span class="line">                    <span class="keyword">final</span> SparseArray&lt;Node&gt; dependencies = dependent.dependencies;</span><br><span class="line">                    <span class="comment">// 将当前节点从伴随节点的依赖节点集合中去掉</span></span><br><span class="line">                    dependencies.remove(key);</span><br><span class="line">                    <span class="comment">// 如果该伴随节点去掉当前节点的依赖之后，没有再依赖其他节点，证明它是新的根节点，加入根节点集合</span></span><br><span class="line">                    <span class="keyword">if</span> (dependencies.size() == <span class="number">0</span>) &#123;</span><br><span class="line">                        roots.add(dependent);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (index &lt; sorted.length) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;Circular dependencies cannot exist&quot;</span></span><br><span class="line">                        + <span class="string">&quot; in RelativeLayout&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>这个排序的过程已经在注释中说明，实现过程还是挺明确的。</p>
+<p>再看完排序过程，我们回到onMeasure()方法中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// …… </span></span><br><span class="line">        <span class="keyword">int</span> myWidth = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> myHeight = -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> width = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> height = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> widthMode = MeasureSpec.getMode(widthMeasureSpec);</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> heightMode = MeasureSpec.getMode(heightMeasureSpec);</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> widthSize = MeasureSpec.getSize(widthMeasureSpec);</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> heightSize = MeasureSpec.getSize(heightMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Record our dimensions if they are known;</span></span><br><span class="line">        <span class="keyword">if</span> (widthMode != MeasureSpec.UNSPECIFIED) &#123;</span><br><span class="line">            myWidth = widthSize;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (heightMode != MeasureSpec.UNSPECIFIED) &#123;</span><br><span class="line">            myHeight = heightSize;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (widthMode == MeasureSpec.EXACTLY) &#123;</span><br><span class="line">            width = myWidth;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (heightMode == MeasureSpec.EXACTLY) &#123;</span><br><span class="line">            height = myHeight;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        View ignore = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">int</span> gravity = mGravity &amp; Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> horizontalGravity = gravity != Gravity.START &amp;&amp; gravity != <span class="number">0</span>;</span><br><span class="line">        gravity = mGravity &amp; Gravity.VERTICAL_GRAVITY_MASK;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> verticalGravity = gravity != Gravity.TOP &amp;&amp; gravity != <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> left = Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">int</span> top = Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">int</span> right = Integer.MIN_VALUE;</span><br><span class="line">        <span class="keyword">int</span> bottom = Integer.MIN_VALUE;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">boolean</span> offsetHorizontalAxis = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">boolean</span> offsetVerticalAxis = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> ((horizontalGravity || verticalGravity) &amp;&amp; mIgnoreGravity != View.NO_ID) &#123;</span><br><span class="line">            ignore = findViewById(mIgnoreGravity);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> isWrapContentWidth = widthMode != MeasureSpec.EXACTLY;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">boolean</span> isWrapContentHeight = heightMode != MeasureSpec.EXACTLY;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// We need to know our size for doing the correct computation of children positioning in RTL</span></span><br><span class="line">        <span class="comment">// mode but there is no practical way to get it instead of running the code below.</span></span><br><span class="line">        <span class="comment">// So, instead of running the code twice, we just set the width to a &quot;default display width&quot;</span></span><br><span class="line">        <span class="comment">// before the computation and then, as a last pass, we will update their real position with</span></span><br><span class="line">        <span class="comment">// an offset equals to &quot;DEFAULT_WIDTH - width&quot;.</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> layoutDirection = getLayoutDirection();</span><br><span class="line">        <span class="keyword">if</span> (isLayoutRtl() &amp;&amp; myWidth == -<span class="number">1</span>) &#123;</span><br><span class="line">            myWidth = DEFAULT_WIDTH;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>中间这段是一些辅助变量的初始化，就不多说了，继续往下看</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// …… </span></span><br><span class="line">        View[] views = mSortedHorizontalChildren;</span><br><span class="line">        <span class="keyword">int</span> count = views.length;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            View child = views[i];</span><br><span class="line">            <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line">                <span class="keyword">int</span>[] rules = params.getRules(layoutDirection);</span><br><span class="line"></span><br><span class="line">                applyHorizontalSizeRules(params, myWidth, rules);</span><br><span class="line">                measureChildHorizontal(child, params, myWidth, myHeight);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (positionChildHorizontal(child, params, myWidth, isWrapContentWidth)) &#123;</span><br><span class="line">                    offsetHorizontalAxis = <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>测量过程的第二步是遍历子View进行水平方向的依赖测量</strong>，这一步通过3个函数进行，逐个看下函数的实现。</p>
+<p>介绍函数实现之前先介绍一下rule的概念，在RelativeLayout.LayoutParams进行解析时，会将RelativeLayout中的子View的依赖关系通过rules数组存储起来，数组中的下标代表某条规则，例如LEFT_OF，对应的元素代表这条规则依赖的View id：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (attr) &#123;</span><br><span class="line">     <span class="keyword">case</span> com.android.internal.R.styleable.RelativeLayout_Layout_layout_toLeftOf:</span><br><span class="line">           rules[LEFT_OF] = a.getResourceId(attr, <span class="number">0</span>);</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">                    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>了解了rule的概念之后，看下遍历子View进行依赖测量时相关方法的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">applyHorizontalSizeRules</span><span class="params">(LayoutParams childParams, <span class="keyword">int</span> myWidth, <span class="keyword">int</span>[] rules)</span> </span>&#123;</span><br><span class="line">        RelativeLayout.LayoutParams anchorParams;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// VALUE_NOT_SET indicates a &quot;soft requirement&quot; in that direction. For example:</span></span><br><span class="line">        <span class="comment">// left=10, right=VALUE_NOT_SET means the view must start at 10, but can go as far as it</span></span><br><span class="line">        <span class="comment">// wants to the right</span></span><br><span class="line">        <span class="comment">// left=VALUE_NOT_SET, right=10 means the view must end at 10, but can go as far as it</span></span><br><span class="line">        <span class="comment">// wants to the left</span></span><br><span class="line">        <span class="comment">// left=10, right=20 means the left and right ends are both fixed</span></span><br><span class="line">        childParams.mLeft = VALUE_NOT_SET;</span><br><span class="line">        childParams.mRight = VALUE_NOT_SET;</span><br><span class="line"></span><br><span class="line">        anchorParams = getRelatedViewParams(rules, LEFT_OF);</span><br><span class="line">        <span class="keyword">if</span> (anchorParams != <span class="keyword">null</span>) &#123;</span><br><span class="line">            childParams.mRight = anchorParams.mLeft - (anchorParams.leftMargin +</span><br><span class="line">                    childParams.rightMargin);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childParams.alignWithParent &amp;&amp; rules[LEFT_OF] != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (myWidth &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                childParams.mRight = myWidth - mPaddingRight - childParams.rightMargin;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        anchorParams = getRelatedViewParams(rules, RIGHT_OF);</span><br><span class="line">        <span class="keyword">if</span> (anchorParams != <span class="keyword">null</span>) &#123;</span><br><span class="line">            childParams.mLeft = anchorParams.mRight + (anchorParams.rightMargin +</span><br><span class="line">                    childParams.leftMargin);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childParams.alignWithParent &amp;&amp; rules[RIGHT_OF] != <span class="number">0</span>) &#123;</span><br><span class="line">            childParams.mLeft = mPaddingLeft + childParams.leftMargin;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        anchorParams = getRelatedViewParams(rules, ALIGN_LEFT);</span><br><span class="line">        <span class="keyword">if</span> (anchorParams != <span class="keyword">null</span>) &#123;</span><br><span class="line">            childParams.mLeft = anchorParams.mLeft + childParams.leftMargin;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childParams.alignWithParent &amp;&amp; rules[ALIGN_LEFT] != <span class="number">0</span>) &#123;</span><br><span class="line">            childParams.mLeft = mPaddingLeft + childParams.leftMargin;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        anchorParams = getRelatedViewParams(rules, ALIGN_RIGHT);</span><br><span class="line">        <span class="keyword">if</span> (anchorParams != <span class="keyword">null</span>) &#123;</span><br><span class="line">            childParams.mRight = anchorParams.mRight - childParams.rightMargin;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childParams.alignWithParent &amp;&amp; rules[ALIGN_RIGHT] != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (myWidth &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                childParams.mRight = myWidth - mPaddingRight - childParams.rightMargin;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="number">0</span> != rules[ALIGN_PARENT_LEFT]) &#123;</span><br><span class="line">            childParams.mLeft = mPaddingLeft + childParams.leftMargin;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="number">0</span> != rules[ALIGN_PARENT_RIGHT]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (myWidth &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                childParams.mRight = myWidth - mPaddingRight - childParams.rightMargin;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>纵观整个函数，其实就是对水平方向的几条规则逐个进行处理，这几条规则分别是：LEFT_OF/RIGHT_OF/ALIGN_LEFT/ALIGN_RIGHT/ALIGN_PARENT_LEFT/ALIGN_PARENT_RIGHT；<br>对于每个属性的处理方法都是相似的：通过相应的规则从getRelativeViewParams中取到对应依赖的View，然后通过依赖的View的对应属性和padding来调整该View的对应属性<br>看看下getRelativeViewParams的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> LayoutParams <span class="title">getRelatedViewParams</span><span class="params">(<span class="keyword">int</span>[] rules, <span class="keyword">int</span> relation)</span> </span>&#123;</span><br><span class="line">        View v = getRelatedView(rules, relation);</span><br><span class="line">        <span class="keyword">if</span> (v != <span class="keyword">null</span>) &#123;</span><br><span class="line">            ViewGroup.LayoutParams params = v.getLayoutParams();</span><br><span class="line">            <span class="keyword">if</span> (params <span class="keyword">instanceof</span> LayoutParams) &#123;</span><br><span class="line">                <span class="keyword">return</span> (LayoutParams) v.getLayoutParams();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>真正的实现在getRelatedView中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> View <span class="title">getRelatedView</span><span class="params">(<span class="keyword">int</span>[] rules, <span class="keyword">int</span> relation)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> id = rules[relation];</span><br><span class="line">        <span class="keyword">if</span> (id != <span class="number">0</span>) &#123;</span><br><span class="line">            DependencyGraph.Node node = mGraph.mKeyNodes.get(id);</span><br><span class="line">            <span class="keyword">if</span> (node == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            View v = node.view;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Find the first non-GONE view up the chain</span></span><br><span class="line">            <span class="keyword">while</span> (v.getVisibility() == View.GONE) &#123;</span><br><span class="line">                rules = ((LayoutParams) v.getLayoutParams()).getRules(v.getLayoutDirection());</span><br><span class="line">                node = mGraph.mKeyNodes.get((rules[relation]));</span><br><span class="line">                <span class="comment">// ignore self dependency. for more info look in git commit: da3003</span></span><br><span class="line">                <span class="keyword">if</span> (node == <span class="keyword">null</span> || v == node.view) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">                v = node.view;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> v;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>关键点：</p>
+<ul>
+<li>通过rules数组取到对应依赖的View id</li>
+<li>通过View id从依赖图中取出对应的View</li>
+<li>如果取到的View可见性为GONE，则继续通过对应的依赖规则取依赖的View所依赖的View(有点拗口…)</li>
+</ul>
+<p>经过applyHorizontalSizeRules方法的处理之后，子View的params中的left/right值都已经确定好，然后会进入measureChildHorizontal方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">measureChildHorizontal</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            View child, LayoutParams params, <span class="keyword">int</span> myWidth, <span class="keyword">int</span> myHeight)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> childWidthMeasureSpec = getChildMeasureSpec(params.mLeft, params.mRight,</span><br><span class="line">                params.width, params.leftMargin, params.rightMargin, mPaddingLeft, mPaddingRight,</span><br><span class="line">                myWidth);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> childHeightMeasureSpec;</span><br><span class="line">        <span class="keyword">if</span> (myHeight &lt; <span class="number">0</span> &amp;&amp; !mAllowBrokenMeasureSpecs) &#123;</span><br><span class="line">            <span class="keyword">if</span> (params.height &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(</span><br><span class="line">                        params.height, MeasureSpec.EXACTLY);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// Negative values in a mySize/myWidth/myWidth value in</span></span><br><span class="line">                <span class="comment">// RelativeLayout measurement is code for, &quot;we got an</span></span><br><span class="line">                <span class="comment">// unspecified mode in the RelativeLayout&#x27;s measure spec.&quot;</span></span><br><span class="line">                <span class="comment">// Carry it forward.</span></span><br><span class="line">                childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(<span class="number">0</span>, MeasureSpec.UNSPECIFIED);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> maxHeight;</span><br><span class="line">            <span class="keyword">if</span> (mMeasureVerticalWithPaddingMargin) &#123;</span><br><span class="line">                maxHeight = Math.max(<span class="number">0</span>, myHeight - mPaddingTop - mPaddingBottom</span><br><span class="line">                        - params.topMargin - params.bottomMargin);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                maxHeight = Math.max(<span class="number">0</span>, myHeight);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> heightMode;</span><br><span class="line">            <span class="keyword">if</span> (params.height == LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                heightMode = MeasureSpec.EXACTLY;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                heightMode = MeasureSpec.AT_MOST;</span><br><span class="line">            &#125;</span><br><span class="line">            childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(maxHeight, heightMode);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        child.measure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>在上一阶段我们确定了子View的left/right参数，在这一阶段，可以通过left/right得到子View的宽度，然后进行第一次子View的measure方法调用，进行第一次测量</p>
+<p>接下来调用positionChildHorizontal方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">positionChildHorizontal</span><span class="params">(View child, LayoutParams params, <span class="keyword">int</span> myWidth,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">boolean</span> wrapContent)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> layoutDirection = getLayoutDirection();</span><br><span class="line">        <span class="keyword">int</span>[] rules = params.getRules(layoutDirection);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (params.mLeft == VALUE_NOT_SET &amp;&amp; params.mRight != VALUE_NOT_SET) &#123;</span><br><span class="line">            <span class="comment">// Right is fixed, but left varies</span></span><br><span class="line">            params.mLeft = params.mRight - child.getMeasuredWidth();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (params.mLeft != VALUE_NOT_SET &amp;&amp; params.mRight == VALUE_NOT_SET) &#123;</span><br><span class="line">            <span class="comment">// Left is fixed, but right varies</span></span><br><span class="line">            params.mRight = params.mLeft + child.getMeasuredWidth();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (params.mLeft == VALUE_NOT_SET &amp;&amp; params.mRight == VALUE_NOT_SET) &#123;</span><br><span class="line">            <span class="comment">// Both left and right vary</span></span><br><span class="line">            <span class="keyword">if</span> (rules[CENTER_IN_PARENT] != <span class="number">0</span> || rules[CENTER_HORIZONTAL] != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!wrapContent) &#123;</span><br><span class="line">                    centerHorizontal(child, params, myWidth);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    positionAtEdge(child, params, myWidth);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// This is the default case. For RTL we start from the right and for LTR we start</span></span><br><span class="line">                <span class="comment">// from the left. This will give LEFT/TOP for LTR and RIGHT/TOP for RTL.</span></span><br><span class="line">                positionAtEdge(child, params, myWidth);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> rules[ALIGN_PARENT_END] != <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法的代码不长，从实现中可以得知，该方法的作用在于，那些在前阶段没有设置的左右边界约束。</p>
+<p><strong>接下来是第三步，遍历子View进行垂直方向的依赖测量</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line"><span class="comment">// ……</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> View child = views[i];</span><br><span class="line">            <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                <span class="keyword">final</span> LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line"></span><br><span class="line">                applyVerticalSizeRules(params, myHeight, child.getBaseline());</span><br><span class="line">                measureChild(child, params, myWidth, myHeight);</span><br><span class="line">                <span class="keyword">if</span> (positionChildVertical(child, params, myHeight, isWrapContentHeight)) &#123;</span><br><span class="line">                    offsetVerticalAxis = <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (isWrapContentWidth) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (isLayoutRtl()) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (targetSdkVersion &lt; Build.VERSION_CODES.KITKAT) &#123;</span><br><span class="line">                            width = Math.max(width, myWidth - params.mLeft);</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            width = Math.max(width, myWidth - params.mLeft + params.leftMargin);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (targetSdkVersion &lt; Build.VERSION_CODES.KITKAT) &#123;</span><br><span class="line">                            width = Math.max(width, params.mRight);</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            width = Math.max(width, params.mRight + params.rightMargin);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (isWrapContentHeight) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (targetSdkVersion &lt; Build.VERSION_CODES.KITKAT) &#123;</span><br><span class="line">                        height = Math.max(height, params.mBottom);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        height = Math.max(height, params.mBottom + params.bottomMargin);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (child != ignore || verticalGravity) &#123;</span><br><span class="line">                    left = Math.min(left, params.mLeft - params.leftMargin);</span><br><span class="line">                    top = Math.min(top, params.mTop - params.topMargin);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (child != ignore || horizontalGravity) &#123;</span><br><span class="line">                    right = Math.max(right, params.mRight + params.rightMargin);</span><br><span class="line">                    bottom = Math.max(bottom, params.mBottom + params.bottomMargin);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"><span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>垂直方向的约束测量过程和水平方向是一个套路：</p>
+<ul>
+<li>遍历子View，根据垂直方向的规则进行top/bottom的约束</li>
+<li>测量一次子View</li>
+<li>补充边界约束</li>
+<li>不同的是，在垂直方向的测量阶段，还会对RelativeLayout的最大宽度和最大高度进行计算</li>
+</ul>
+<p><strong>经过水平和垂直方向两轮对子View的分发测量，已经完成了子View的测量过程，接下来是根据是否wrapContent调整RelativeLayout自身的高度</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isWrapContentWidth) &#123;</span><br><span class="line">        <span class="comment">// Width already has left padding in it since it was calculated by looking at</span></span><br><span class="line">        <span class="comment">// the right of each child view</span></span><br><span class="line">        width += mPaddingRight;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mLayoutParams != <span class="keyword">null</span> &amp;&amp; mLayoutParams.width &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            width = Math.max(width, mLayoutParams.width);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        width = Math.max(width, getSuggestedMinimumWidth());</span><br><span class="line">        width = resolveSize(width, widthMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (offsetHorizontalAxis) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">                <span class="keyword">final</span> View child = views[i];</span><br><span class="line">                <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                    <span class="keyword">final</span> LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span>[] rules = params.getRules(layoutDirection);</span><br><span class="line">                    <span class="keyword">if</span> (rules[CENTER_IN_PARENT] != <span class="number">0</span> || rules[CENTER_HORIZONTAL] != <span class="number">0</span>) &#123;</span><br><span class="line">                        centerHorizontal(child, params, width);</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (rules[ALIGN_PARENT_RIGHT] != <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="keyword">final</span> <span class="keyword">int</span> childWidth = child.getMeasuredWidth();</span><br><span class="line">                        params.mLeft = width - mPaddingRight - childWidth;</span><br><span class="line">                        params.mRight = params.mLeft + childWidth;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isWrapContentHeight) &#123;</span><br><span class="line">        <span class="comment">// Height already has top padding in it since it was calculated by looking at</span></span><br><span class="line">        <span class="comment">// the bottom of each child view</span></span><br><span class="line">        height += mPaddingBottom;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mLayoutParams != <span class="keyword">null</span> &amp;&amp; mLayoutParams.height &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            height = Math.max(height, mLayoutParams.height);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        height = Math.max(height, getSuggestedMinimumHeight());</span><br><span class="line">        height = resolveSize(height, heightMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (offsetVerticalAxis) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">                <span class="keyword">final</span> View child = views[i];</span><br><span class="line">                <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                    <span class="keyword">final</span> LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span>[] rules = params.getRules(layoutDirection);</span><br><span class="line">                    <span class="keyword">if</span> (rules[CENTER_IN_PARENT] != <span class="number">0</span> || rules[CENTER_VERTICAL] != <span class="number">0</span>) &#123;</span><br><span class="line">                        centerVertical(child, params, height);</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (rules[ALIGN_PARENT_BOTTOM] != <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="keyword">final</span> <span class="keyword">int</span> childHeight = child.getMeasuredHeight();</span><br><span class="line">                        params.mTop = height - mPaddingBottom - childHeight;</span><br><span class="line">                        params.mBottom = params.mTop + childHeight;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>然后再根据Gravity属性调整位置</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isWrapContentWidth) &#123;</span><br><span class="line">        <span class="comment">// Width already has left padding in it since it was calculated by looking at</span></span><br><span class="line">        <span class="comment">// the right of each child view</span></span><br><span class="line">        width += mPaddingRight;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mLayoutParams != <span class="keyword">null</span> &amp;&amp; mLayoutParams.width &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            width = Math.max(width, mLayoutParams.width);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        width = Math.max(width, getSuggestedMinimumWidth());</span><br><span class="line">        width = resolveSize(width, widthMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (offsetHorizontalAxis) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">                <span class="keyword">final</span> View child = views[i];</span><br><span class="line">                <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                    <span class="keyword">final</span> LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span>[] rules = params.getRules(layoutDirection);</span><br><span class="line">                    <span class="keyword">if</span> (rules[CENTER_IN_PARENT] != <span class="number">0</span> || rules[CENTER_HORIZONTAL] != <span class="number">0</span>) &#123;</span><br><span class="line">                        centerHorizontal(child, params, width);</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (rules[ALIGN_PARENT_RIGHT] != <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="keyword">final</span> <span class="keyword">int</span> childWidth = child.getMeasuredWidth();</span><br><span class="line">                        params.mLeft = width - mPaddingRight - childWidth;</span><br><span class="line">                        params.mRight = params.mLeft + childWidth;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isWrapContentHeight) &#123;</span><br><span class="line">        <span class="comment">// Height already has top padding in it since it was calculated by looking at</span></span><br><span class="line">        <span class="comment">// the bottom of each child view</span></span><br><span class="line">        height += mPaddingBottom;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mLayoutParams != <span class="keyword">null</span> &amp;&amp; mLayoutParams.height &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            height = Math.max(height, mLayoutParams.height);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        height = Math.max(height, getSuggestedMinimumHeight());</span><br><span class="line">        height = resolveSize(height, heightMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (offsetVerticalAxis) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">                <span class="keyword">final</span> View child = views[i];</span><br><span class="line">                <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                    <span class="keyword">final</span> LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span>[] rules = params.getRules(layoutDirection);</span><br><span class="line">                    <span class="keyword">if</span> (rules[CENTER_IN_PARENT] != <span class="number">0</span> || rules[CENTER_VERTICAL] != <span class="number">0</span>) &#123;</span><br><span class="line">                        centerVertical(child, params, height);</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (rules[ALIGN_PARENT_BOTTOM] != <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="keyword">final</span> <span class="keyword">int</span> childHeight = child.getMeasuredHeight();</span><br><span class="line">                        params.mTop = height - mPaddingBottom - childHeight;</span><br><span class="line">                        params.mBottom = params.mTop + childHeight;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>最后就是设置自身的宽高，完成测量过程</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isLayoutRtl()) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">int</span> offsetWidth = myWidth - width;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">          <span class="keyword">final</span> View child = views[i];</span><br><span class="line">          <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">              <span class="keyword">final</span> LayoutParams params = (LayoutParams) child.getLayoutParams();</span><br><span class="line">              params.mLeft -= offsetWidth;</span><br><span class="line">              params.mRight -= offsetWidth;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  setMeasuredDimension(width, height);</span><br></pre></td></tr></table></figure>
+<p>上述就是onMeasure的过程。</p>
+<h3 id="onLayout"><a href="#onLayout" class="headerlink" title="onLayout"></a>onLayout</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//  The layout has actually already been performed and the positions</span></span><br><span class="line">        <span class="comment">//  cached.  Apply the cached values to the children.</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> count = getChildCount();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            View child = getChildAt(i);</span><br><span class="line">            <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                RelativeLayout.LayoutParams st =</span><br><span class="line">                        (RelativeLayout.LayoutParams) child.getLayoutParams();</span><br><span class="line">                child.layout(st.mLeft, st.mTop, st.mRight, st.mBottom);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>onLayout的过程很简单，遍历子View，因为子View在分发测量过程中已经确定了上下左右的边界约束，所以直接调用对应的约束值进行layout。</p>
+<p>###onDraw<br>在RelativeLayout中，没有对onDraw进行重写。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>和大多数容器布局类似，RelativeLayout的核心在于测量阶段，需要遍历两次子View，原因是水平和垂直方向各需一次来确定相应方向的边界约束。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="tag"># Android源码学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/13/Android-LinearLayout%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="next" title="Android LinearLayout源码学习">
+                <i class="fa fa-chevron-left"></i> Android LinearLayout源码学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onLayout"><span class="nav-number">2.</span> <span class="nav-text">onLayout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
