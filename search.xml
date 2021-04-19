@@ -108,7 +108,7 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android Framework</tag>
       </tags>
   </entry>
   <entry>
@@ -162,7 +162,7 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android Framework</tag>
       </tags>
   </entry>
   <entry>
@@ -208,7 +208,7 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android布局</tag>
       </tags>
   </entry>
   <entry>
@@ -281,7 +281,7 @@
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>和大多数容器布局类似，RelativeLayout的核心在于测量阶段，需要遍历两次子View，原因是水平和垂直方向各需一次来确定相应方向的边界约束。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android布局</tag>
       </tags>
   </entry>
   <entry>
@@ -344,7 +344,7 @@
 <p>可以看到，对单击和长按的最终处理，是通过调用相应Listener的对应方法来进行的。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android Framework</tag>
       </tags>
   </entry>
   <entry>
@@ -373,7 +373,7 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android布局</tag>
       </tags>
   </entry>
   <entry>
@@ -400,7 +400,7 @@
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>相对LinearLayout和RelativeLayout而言，FrameLayout的功能比较简单，因此onMeasure()和onLayout()的实现都比较简洁，在onMeasure()过程，最好情况是测量一次子View，最坏情况是两次。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android布局</tag>
       </tags>
   </entry>
   <entry>
@@ -427,7 +427,7 @@
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>相对LinearLayout和RelativeLayout而言，FrameLayout的功能比较简单，因此onMeasure()和onLayout()的实现都比较简洁，在onMeasure()过程，最好情况是测量一次子View，最坏情况是两次。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android布局</tag>
       </tags>
   </entry>
   <entry>
@@ -476,7 +476,7 @@
 <p>AbsListView的obtainView函数的作用就是构建出某一position对应的View，首先会从mRecycler中取出一个对应的废弃View，这个废弃View就是传入Adapter的getView()方法中的convertView，这里也就解释了为什么需要判空——在首次布局时，实际上是还没有废弃的View可用的，而后面布局时就有废弃的View可复用，无需重新构建了。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android控件</tag>
       </tags>
   </entry>
   <entry>
@@ -503,7 +503,7 @@
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>相对LinearLayout和RelativeLayout而言，FrameLayout的功能比较简单，因此onMeasure()和onLayout()的实现都比较简洁，在onMeasure()过程，最好情况是测量一次子View，最坏情况是两次。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android布局</tag>
       </tags>
   </entry>
   <entry>
@@ -535,7 +535,7 @@
 <p>在onDraw()的源码可以看出，ImageView的绘制，最终是通过Drawable的draw(Canvas canvas)方法完成的。</p>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android控件</tag>
       </tags>
   </entry>
   <entry>
@@ -608,7 +608,7 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Android源码学习</tag>
+        <tag>Android控件</tag>
       </tags>
   </entry>
   <entry>
@@ -697,7 +697,7 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Android源码</tag>
+        <tag>Android控件</tag>
       </tags>
   </entry>
   <entry>
@@ -743,7 +743,7 @@
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>在TextView这一层，整体流程如上文所示，从源码学习的过程中能看到，实际上测量和绘制的逻辑都在Layout/Editor这些类里面，在下一篇我们具体看下它们的实现。</p>
 ]]></content>
       <tags>
-        <tag>Android源码</tag>
+        <tag>Android控件</tag>
       </tags>
   </entry>
 </search>
