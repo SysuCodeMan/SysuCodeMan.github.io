@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="https://fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络框架," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Overviewandroid-async-http是loopj开源的一款网络请求库，可以说是最早出现的Android网络请求库，虽然目前作者已经不再维护，并且Android也放弃了其底层支持HttpClient，但作为Android平台网络请求库的鼻祖，其设计思想还是值得学习。 使用（来自官方文档）12345678910111213141516171819import com.loopj.and">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android-async-http源码学习">
+<meta property="og:url" content="http://example.com/2021/04/26/android-async-http%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="Overviewandroid-async-http是loopj开源的一款网络请求库，可以说是最早出现的Android网络请求库，虽然目前作者已经不再维护，并且Android也放弃了其底层支持HttpClient，但作为Android平台网络请求库的鼻祖，其设计思想还是值得学习。 使用（来自官方文档）12345678910111213141516171819import com.loopj.and">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-04-26T08:27:35.000Z">
+<meta property="article:modified_time" content="2021-04-30T03:15:05.582Z">
+<meta property="article:author" content="ChrisChan">
+<meta property="article:tag" content="网络框架">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/26/android-async-http源码学习/"/>
+
+
+
+
+
+  <title>android-async-http源码学习 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">解决问题</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/26/android-async-http%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">android-async-http源码学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-04-26T16:27:35+08:00">
+                2021-04-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.8k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><p>android-async-http是loopj开源的一款网络请求库，可以说是最早出现的Android网络请求库，虽然目前作者已经不再维护，并且Android也放弃了其底层支持HttpClient，但作为Android平台网络请求库的鼻祖，其设计思想还是值得学习。</p>
+<h3 id="使用（来自官方文档）"><a href="#使用（来自官方文档）" class="headerlink" title="使用（来自官方文档）"></a>使用（来自官方文档）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.loopj.android.http.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TwitterRestClient</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String BASE_URL = <span class="string">&quot;https://api.twitter.com/1/&quot;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> AsyncHttpClient client = <span class="keyword">new</span> AsyncHttpClient();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">get</span><span class="params">(String url, RequestParams params, AsyncHttpResponseHandler responseHandler)</span> </span>&#123;</span><br><span class="line">      client.get(getAbsoluteUrl(url), params, responseHandler);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">post</span><span class="params">(String url, RequestParams params, AsyncHttpResponseHandler responseHandler)</span> </span>&#123;</span><br><span class="line">      client.post(getAbsoluteUrl(url), params, responseHandler);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> String <span class="title">getAbsoluteUrl</span><span class="params">(String relativeUrl)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> BASE_URL + relativeUrl;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从官方的使用介绍来看，只要调用AsyncHttpClient的get()方法传入url、参数和handler即可完成一次http的get请求，因此源码学习从AsyncHttpClient入手</p>
+<h3 id="1-构造函数"><a href="#1-构造函数" class="headerlink" title="1.构造函数"></a>1.构造函数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncHttpClient</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(<span class="keyword">false</span>, <span class="number">80</span>, <span class="number">443</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncHttpClient</span><span class="params">(<span class="keyword">int</span> httpPort)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(<span class="keyword">false</span>, httpPort, <span class="number">443</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncHttpClient</span><span class="params">(<span class="keyword">int</span> httpPort, <span class="keyword">int</span> httpsPort)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(<span class="keyword">false</span>, httpPort, httpsPort);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncHttpClient</span><span class="params">(<span class="keyword">boolean</span> fixNoHttpResponseException, <span class="keyword">int</span> httpPort, <span class="keyword">int</span> httpsPort)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(getDefaultSchemeRegistry(fixNoHttpResponseException, httpPort, httpsPort));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>0~3个参数的构造函数实际上就是对应不同的默认值，如果都没有设置，默认情况下http请求使用80端口，https请求使用443端口；最终都会调用到public AsyncHttpClient(SchemeRegistry schemeRegistry)这个构造函数，首先看下默认传入的schemeRegistry是什么东西：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> SchemeRegistry <span class="title">getDefaultSchemeRegistry</span><span class="params">(<span class="keyword">boolean</span> fixNoHttpResponseException, <span class="keyword">int</span> httpPort, <span class="keyword">int</span> httpsPort)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">    <span class="comment">// Fix to SSL flaw in API &lt; ICS</span></span><br><span class="line">    <span class="comment">// See https://code.google.com/p/android/issues/detail?id=13117</span></span><br><span class="line">    SSLSocketFactory sslSocketFactory;</span><br><span class="line">    <span class="keyword">if</span> (fixNoHttpResponseException) &#123;</span><br><span class="line">        sslSocketFactory = MySSLSocketFactory.getFixedSocketFactory();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        sslSocketFactory = SSLSocketFactory.getSocketFactory();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SchemeRegistry schemeRegistry = <span class="keyword">new</span> SchemeRegistry();</span><br><span class="line">    schemeRegistry.register(<span class="keyword">new</span> Scheme(<span class="string">&quot;http&quot;</span>, PlainSocketFactory.getSocketFactory(), httpPort));</span><br><span class="line">    schemeRegistry.register(<span class="keyword">new</span> Scheme(<span class="string">&quot;https&quot;</span>, sslSocketFactory, httpsPort));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> schemeRegistry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建出SchemeRegistry对象，并且把http和https对应的SocketFactory注册给SchemeRegistry对象，而SchemeRegistry对象的构造函数也很简单：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">SchemeRegistry</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    registeredSchemes = <span class="keyword">new</span> ConcurrentHashMap&lt;String,Scheme&gt;();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>言归正传，继续回到AsyncHttpClient真正的构造函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncHttpClient</span><span class="params">(SchemeRegistry schemeRegistry)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    BasicHttpParams httpParams = <span class="keyword">new</span> BasicHttpParams();</span><br><span class="line"></span><br><span class="line">    ConnManagerParams.setTimeout(httpParams, connectTimeout);</span><br><span class="line">    ConnManagerParams.setMaxConnectionsPerRoute(httpParams, <span class="keyword">new</span> ConnPerRouteBean(maxConnections));</span><br><span class="line">    ConnManagerParams.setMaxTotalConnections(httpParams, DEFAULT_MAX_CONNECTIONS);</span><br><span class="line"></span><br><span class="line">    HttpConnectionParams.setSoTimeout(httpParams, responseTimeout);</span><br><span class="line">    HttpConnectionParams.setConnectionTimeout(httpParams, connectTimeout);</span><br><span class="line">    HttpConnectionParams.setTcpNoDelay(httpParams, <span class="keyword">true</span>);</span><br><span class="line">    HttpConnectionParams.setSocketBufferSize(httpParams, DEFAULT_SOCKET_BUFFER_SIZE);</span><br><span class="line"></span><br><span class="line">    HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);</span><br><span class="line"></span><br><span class="line">    ClientConnectionManager cm = createConnectionManager(schemeRegistry, httpParams);</span><br><span class="line">    Utils.asserts(cm != <span class="keyword">null</span>, <span class="string">&quot;Custom implementation of #createConnectionManager(SchemeRegistry, BasicHttpParams) returned null&quot;</span>);</span><br><span class="line"></span><br><span class="line">    threadPool = getDefaultThreadPool();</span><br><span class="line">    requestMap = Collections.synchronizedMap(<span class="keyword">new</span> WeakHashMap&lt;Context, List&lt;RequestHandle&gt;&gt;());</span><br><span class="line">    clientHeaderMap = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line"></span><br><span class="line">    httpContext = <span class="keyword">new</span> SyncBasicHttpContext(<span class="keyword">new</span> BasicHttpContext());</span><br><span class="line">    httpClient = <span class="keyword">new</span> DefaultHttpClient(cm, httpParams);</span><br><span class="line">    httpClient.addRequestInterceptor(<span class="keyword">new</span> HttpRequestInterceptor() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(HttpRequest request, HttpContext context)</span> </span>&#123;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// ……</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    httpClient.addResponseInterceptor(<span class="keyword">new</span> HttpResponseInterceptor() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(HttpResponse response, HttpContext context)</span> </span>&#123;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// ……</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    httpClient.addRequestInterceptor(<span class="keyword">new</span> HttpRequestInterceptor() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(<span class="keyword">final</span> HttpRequest request, <span class="keyword">final</span> HttpContext context)</span> <span class="keyword">throws</span> HttpException, IOException </span>&#123;</span><br><span class="line">            <span class="comment">// ……</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    httpClient.setHttpRequestRetryHandler(<span class="keyword">new</span> RetryHandler(DEFAULT_MAX_RETRIES, DEFAULT_RETRY_SLEEP_TIME_MILLIS));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要进行了以下几个操作：</p>
+<ul>
+<li>调用ConnManagerParams、HttpConnectionParams、HttpProtocolParams的静态方法进行参数设置</li>
+<li>创建出了线程池</li>
+<li>创建线程同步的Map记录request</li>
+<li>创建出了HttpClient对象</li>
+<li>为httpClient对象添加了多个requestInterceptor</li>
+<li>为httpClient对象设置了请求重试的handler</li>
+</ul>
+<h3 id="2-get请求"><a href="#2-get请求" class="headerlink" title="2.get请求"></a>2.get请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> RequestHandle <span class="title">get</span><span class="params">(String url, RequestParams params, ResponseHandlerInterface responseHandler)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> get(<span class="keyword">null</span>, url, params, responseHandler);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> RequestHandle <span class="title">get</span><span class="params">(Context context, String url, RequestParams params, ResponseHandlerInterface responseHandler)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> sendRequest(httpClient, httpContext, <span class="keyword">new</span> HttpGet(getUrlWithQueryString(isUrlEncodingEnabled, url, params)), <span class="keyword">null</span>, responseHandler, context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> RequestHandle <span class="title">get</span><span class="params">(Context context, String url, RequestParams params, ResponseHandlerInterface responseHandler)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> sendRequest(httpClient, httpContext, <span class="keyword">new</span> HttpGet(getUrlWithQueryString(isUrlEncodingEnabled, url, params)), <span class="keyword">null</span>, responseHandler, context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后是转到sendRequest()方法进行请求发送</p>
+<h3 id="3-sendRequest"><a href="#3-sendRequest" class="headerlink" title="3.sendRequest()"></a>3.sendRequest()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> RequestHandle <span class="title">sendRequest</span><span class="params">(DefaultHttpClient client, HttpContext httpContext, HttpUriRequest uriRequest, String contentType, ResponseHandlerInterface responseHandler, Context context)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">    <span class="keyword">if</span> (contentType != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (uriRequest <span class="keyword">instanceof</span> HttpEntityEnclosingRequestBase &amp;&amp; ((HttpEntityEnclosingRequestBase) uriRequest).getEntity() != <span class="keyword">null</span> &amp;&amp; uriRequest.containsHeader(HEADER_CONTENT_TYPE)) &#123;</span><br><span class="line">            log.w(LOG_TAG, <span class="string">&quot;Passed contentType will be ignored because HttpEntity sets content type&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            uriRequest.setHeader(HEADER_CONTENT_TYPE, contentType);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    responseHandler.setRequestHeaders(uriRequest.getAllHeaders());</span><br><span class="line">    responseHandler.setRequestURI(uriRequest.getURI());</span><br><span class="line"></span><br><span class="line">    AsyncHttpRequest request = newAsyncHttpRequest(client, httpContext, uriRequest, contentType, responseHandler, context);</span><br><span class="line">    threadPool.submit(request);</span><br><span class="line">    RequestHandle requestHandle = <span class="keyword">new</span> RequestHandle(request);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (context != <span class="keyword">null</span>) &#123;</span><br><span class="line">        List&lt;RequestHandle&gt; requestList;</span><br><span class="line">        <span class="comment">// Add request to request map</span></span><br><span class="line">        <span class="keyword">synchronized</span> (requestMap) &#123;</span><br><span class="line">            requestList = requestMap.get(context);</span><br><span class="line">            <span class="keyword">if</span> (requestList == <span class="keyword">null</span>) &#123;</span><br><span class="line">                requestList = Collections.synchronizedList(<span class="keyword">new</span> LinkedList&lt;RequestHandle&gt;());</span><br><span class="line">                requestMap.put(context, requestList);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        requestList.add(requestHandle);</span><br><span class="line"></span><br><span class="line">        Iterator&lt;RequestHandle&gt; iterator = requestList.iterator();</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (iterator.next().shouldBeGarbageCollected()) &#123;</span><br><span class="line">                iterator.remove();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> requestHandle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这段函数中，最主要的工作是创建出了一个AsyncHttpRequest，然后submit到threadPool线程池中，由此可以推断这个AsyncHttpRequest是一个Runnable对象，因此转到AsyncHttpRequest的run()函数中。</p>
+<h3 id="3-1-AsyncHttpRequest-run"><a href="#3-1-AsyncHttpRequest-run" class="headerlink" title="3.1 AsyncHttpRequest.run()"></a>3.1 AsyncHttpRequest.run()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Carry out pre-processing for this request only once.</span></span><br><span class="line">    <span class="keyword">if</span> (!isRequestPreProcessed) &#123;</span><br><span class="line">        isRequestPreProcessed = <span class="keyword">true</span>;</span><br><span class="line">        onPreProcessRequest(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    responseHandler.sendStartMessage();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        makeRequestWithRetries();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!isCancelled()) &#123;</span><br><span class="line">            responseHandler.sendFailureMessage(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, e);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            AsyncHttpClient.log.e(<span class="string">&quot;AsyncHttpRequest&quot;</span>, <span class="string">&quot;makeRequestWithRetries returned error&quot;</span>, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    responseHandler.sendFinishMessage();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Carry out post-processing for this request.</span></span><br><span class="line">    onPostProcessRequest(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">    isFinished = <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段函数中多次调用isCancelled()来检查请求有没有被取消，除去这些检查代码，就是对onPreProcessRequest()、onPostProcessRequest()的调用，以及对responseHandler在请求发送前和发送后调用sendStartMessage()和sendFinishMessage()来发送通知<br>而真正进行请求发送的操作是调用makeRequestWithRetries()函数</p>
+<h3 id="3-1-1-makeRequestWithRetries"><a href="#3-1-1-makeRequestWithRetries" class="headerlink" title="3.1.1 makeRequestWithRetries()"></a>3.1.1 makeRequestWithRetries()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">makeRequestWithRetries</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> retry = <span class="keyword">true</span>;</span><br><span class="line">    IOException cause = <span class="keyword">null</span>;</span><br><span class="line">    HttpRequestRetryHandler retryHandler = client.getHttpRequestRetryHandler();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (retry) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                makeRequest();</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (UnknownHostException e) &#123;</span><br><span class="line">                <span class="comment">// switching between WI-FI and mobile data networks can cause a retry which then results in an UnknownHostException</span></span><br><span class="line">                <span class="comment">// while the WI-FI is initialising. The retry logic will be invoked here, if this is NOT the first retry</span></span><br><span class="line">                <span class="comment">// (to assist in genuine cases of unknown host) which seems better than outright failure</span></span><br><span class="line">                cause = <span class="keyword">new</span> IOException(<span class="string">&quot;UnknownHostException exception: &quot;</span> + e.getMessage(), e);</span><br><span class="line">                retry = (executionCount &gt; <span class="number">0</span>) &amp;&amp; retryHandler.retryRequest(e, ++executionCount, context);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NullPointerException e) &#123;</span><br><span class="line">                <span class="comment">// there&#x27;s a bug in HttpClient 4.0.x that on some occasions causes</span></span><br><span class="line">                <span class="comment">// DefaultRequestExecutor to throw an NPE, see</span></span><br><span class="line">                <span class="comment">// https://code.google.com/p/android/issues/detail?id=5255</span></span><br><span class="line">                cause = <span class="keyword">new</span> IOException(<span class="string">&quot;NPE in HttpClient: &quot;</span> + e.getMessage());</span><br><span class="line">                retry = retryHandler.retryRequest(cause, ++executionCount, context);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">                    <span class="comment">// Eating exception, as the request was cancelled</span></span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                cause = e;</span><br><span class="line">                retry = retryHandler.retryRequest(cause, ++executionCount, context);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (retry) &#123;</span><br><span class="line">                responseHandler.sendRetryMessage(executionCount);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="comment">// catch anything else to ensure failure message is propagated</span></span><br><span class="line">        AsyncHttpClient.log.e(<span class="string">&quot;AsyncHttpRequest&quot;</span>, <span class="string">&quot;Unhandled exception origin cause&quot;</span>, e);</span><br><span class="line">        cause = <span class="keyword">new</span> IOException(<span class="string">&quot;Unhandled exception: &quot;</span> + e.getMessage(), cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// cleaned up to throw IOException</span></span><br><span class="line">    <span class="keyword">throw</span> (cause);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数里面其实是重试逻辑的实现：通过一个while循环搭配上try-catch代码块，如果请求没有异常，则跳出这个循环；有异常的话则在catch中进行重试的准备和通知操作，然后通过while的下一次循环完成重试<br>而真正发送请求的是makeRequest()函数</p>
+<h3 id="3-1-1-1-makeRequest"><a href="#3-1-1-1-makeRequest" class="headerlink" title="3.1.1.1 makeRequest()"></a>3.1.1.1 makeRequest()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">makeRequest</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Fixes #115</span></span><br><span class="line">    <span class="keyword">if</span> (request.getURI().getScheme() == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// subclass of IOException so processed in the caller</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> MalformedURLException(<span class="string">&quot;No valid URI scheme was provided&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (responseHandler <span class="keyword">instanceof</span> RangeFileAsyncHttpResponseHandler) &#123;</span><br><span class="line">        ((RangeFileAsyncHttpResponseHandler) responseHandler).updateRequestHeaders(request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    HttpResponse response = client.execute(request, context);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Carry out pre-processing for this response.</span></span><br><span class="line">    responseHandler.onPreProcessResponse(responseHandler, response);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The response is ready, handle it.</span></span><br><span class="line">    responseHandler.sendResponseMessage(response);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Carry out post-processing for this response.</span></span><br><span class="line">    responseHandler.onPostProcessResponse(responseHandler, response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>和前面提到过的AsyncHttpRequest.run()方法是一样的，除去多次的isCancelled()检查以及请求前后的responseHandler通知方法回调以外，真正进行网络请求的代码是：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HttpResponse response = client.execute(request, context);</span><br></pre></td></tr></table></figure>
+<p>这里的client是HttpClient的实例，因此到这里就基本完成android-async-http的工作了，往后的真正网络请求发出是通过HttpClient进行的。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>严格来说android-async-http是一个网络请求管理库，而不是网络请求库，因为最终网络请求的工作是交由HttpClient进行，android-async-http做的工作主要有以下这些：</p>
+<ul>
+<li>通过线程池进行并发请求的管理</li>
+<li>通过responseHandler在请求发送的对应时机进行和主线程的消息传递，更加方便用户代码操作</li>
+<li>通过while循环+try-catch实现了重试机制</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E6%A1%86%E6%9E%B6/" rel="tag"><i class="fa fa-tag"></i> 网络框架</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/25/Volley%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="next" title="Volley源码学习">
+                <i class="fa fa-chevron-left"></i> Volley源码学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%EF%BC%88%E6%9D%A5%E8%87%AA%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">使用（来自官方文档）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">1.构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-get%E8%AF%B7%E6%B1%82"><span class="nav-number">4.</span> <span class="nav-text">2.get请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-sendRequest"><span class="nav-number">5.</span> <span class="nav-text">3.sendRequest()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-AsyncHttpRequest-run"><span class="nav-number">6.</span> <span class="nav-text">3.1 AsyncHttpRequest.run()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-1-makeRequestWithRetries"><span class="nav-number">7.</span> <span class="nav-text">3.1.1 makeRequestWithRetries()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-1-1-makeRequest"><span class="nav-number">8.</span> <span class="nav-text">3.1.1.1 makeRequest()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChrisChan</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">37.8k</span>
+  
+</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
