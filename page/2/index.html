@@ -521,7 +521,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  812
+                  1.3k
                 </span>
               
 
@@ -537,7 +537,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  6
                 </span>
               
             </div>
@@ -560,8 +560,10 @@
       
         
           
-          OverViewFrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。
-onMeasure一个布局容器的工作原理无非就是onMeasure()/onLayout()/onDraw()3个阶段的处理，先来直接看下onMeasure()的实现
+          OverViewTableLayout是Android的六大布局容器之一，不过日常开发中使用得并不多，顾名思义，其主要特点是像表格一样，有行和列的概念。
+重要属性TableLayout有以下重要属性：
+
+android:shrinkColumns属性，当TableRow里边的空间布满布局的时候，指定
           ...
           <!--noindex-->
           <div class="post-button text-center">
@@ -679,7 +681,7 @@ onMeasure一个布局容器的工作原理无非就是onMeasure()/onLayout()/onD
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  812
+                  1.2k
                 </span>
               
 
@@ -695,7 +697,7 @@ onMeasure一个布局容器的工作原理无非就是onMeasure()/onLayout()/onD
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  6
                 </span>
               
             </div>
@@ -718,8 +720,9 @@ onMeasure一个布局容器的工作原理无非就是onMeasure()/onLayout()/onD
       
         
           
-          OverViewFrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。
-onMeasure一个布局容器的工作原理无非就是onMeasure()/onLayout()/onDraw()3个阶段的处理，先来直接看下onMeasure()的实现
+          OverViewGridLayout是Android4.0引入的网格控件，可以方便地实现网格式布局，减少嵌套层级，这周看下GridLayout具体的工作原理。
+onMeasure照例从测量阶段开始，看下GridLayout在测量阶段进行了什么操作：
+1234567891011121314151617
           ...
           <!--noindex-->
           <div class="post-button text-center">
@@ -1827,7 +1830,7 @@ This class represents the basic building block for user interface components. A 
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">42.3k</span>
+    <span title="Site words total count">43.1k</span>
   
 </div>
 

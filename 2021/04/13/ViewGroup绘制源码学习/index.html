@@ -112,14 +112,14 @@
 <meta property="og:site_name" content="ChrisChan的个人博客">
 <meta property="og:description" content="ViewGroup   A ViewGroup is a special view that can contain other views. The view group is the base class for layouts and views containers. This class also defines the  android.view.ViewGroup.LayoutPar">
 <meta property="og:locale">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-e627c1cecca60435.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5866715-ae2ee8eff4fffb96.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506172925.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506173006.png">
 <meta property="article:published_time" content="2021-04-13T15:07:24.000Z">
-<meta property="article:modified_time" content="2021-04-19T15:56:03.374Z">
+<meta property="article:modified_time" content="2021-05-06T09:30:44.668Z">
 <meta property="article:author" content="ChrisChan">
 <meta property="article:tag" content="Android Framework">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/5866715-e627c1cecca60435.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506172925.png">
 
 
 
@@ -409,10 +409,10 @@
 <p>A ViewGroup is a special view that can contain other views. The view group is the base class for layouts and views containers. This class also defines the<br>  android.view.ViewGroup.LayoutParams class which serves as the base class for layouts parameters.</p>
 </blockquote>
 <h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><p>首先看下ViewGroup的继承层次：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public abstract class ViewGroup extends View implements ViewParent, ViewManager </span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ViewGroup</span> <span class="keyword">extends</span> <span class="title">View</span> <span class="keyword">implements</span> <span class="title">ViewParent</span>, <span class="title">ViewManager</span> </span></span><br></pre></td></tr></table></figure>
 <p>可以看到ViewGroup与View第一个不同点在于，ViewGroup是一个抽象类，继承自View，实现了ViewParent和ViewManager两个接口</p>
-<h3 id="ViewParent和ViewManager"><a href="#ViewParent和ViewManager" class="headerlink" title="ViewParent和ViewManager"></a>ViewParent和ViewManager</h3><p>首先是ViewParent这个接口，内含的部分方法如下：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-e627c1cecca60435.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ViewParent部分方法"></p>
-<p>其次是ViewManager的方法：<br><img src="https://upload-images.jianshu.io/upload_images/5866715-ae2ee8eff4fffb96.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ViewManager"><br>ViewManager的方法很好理解，对View进行的增删改3个操作</p>
+<h3 id="ViewParent和ViewManager"><a href="#ViewParent和ViewManager" class="headerlink" title="ViewParent和ViewManager"></a>ViewParent和ViewManager</h3><p>首先是ViewParent这个接口，内含的部分方法如下：<br><img src="https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506172925.png" alt="ViewParent部分方法"></p>
+<p>其次是ViewManager的方法：<br><img src="https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506173006.png" alt="ViewManager"><br>ViewManager的方法很好理解，对View进行的增删改3个操作</p>
 <h3 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h3><p>和View类似，ViewGroup也有4个构造函数：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ViewGroup</span><span class="params">(Context context)</span></span></span><br></pre></td></tr></table></figure>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ViewGroup</span><span class="params">(Context context, AttributeSet attrs)</span></span></span><br></pre></td></tr></table></figure>
@@ -438,7 +438,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">layout</span><span class="params">(<span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!mSuppressLayout &amp;&amp; (mTransition == <span class="keyword">null</span> || !mTransition.isChangingLayout())) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mTransition != <span class="keyword">null</span>) &#123;</span><br><span class="line">                mTransition.layoutChange(<span class="keyword">this</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">super</span>.layout(l, t, r, b);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// record the fact that we noop&#x27;d it; request layout when transition finishes</span></span><br><span class="line">            mLayoutCalledWhileSuppressed = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
 <p>更加关键的是onLayout()方法，这里变成了abstract抽象方法，这也是为什么ViewGroup是一个抽象类的原因</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">protected abstract void onLayout(b</span><br><span class="line">        oolean changed,</span><br><span class="line">        int l, int t, int r, int b);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(b</span></span></span><br><span class="line"><span class="function"><span class="params">        oolean changed,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span></span>;</span><br></pre></td></tr></table></figure>
 
 <h5 id="draw"><a href="#draw" class="headerlink" title="draw"></a>draw</h5><p>在draw阶段，ViewGroup里相关的函数是dispatchDraw()，drawChild()：在dispatchDraw()中遍历所有的子View，对所有子View执行drawChild()方法，而drawChild()方法的实现非常简单：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">drawChild</span><span class="params">(Canvas canvas, View child, <span class="keyword">long</span> drawingTime)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> child.draw(canvas, <span class="keyword">this</span>, drawingTime);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
@@ -653,7 +653,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">42.3k</span>
+    <span title="Site words total count">43.1k</span>
   
 </div>
 
