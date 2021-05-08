@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="https://fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="图片加载框架," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Overview Fresco is a powerful system for displaying images in Android applications. ——官方说明  Fresco是Facebook公司开源的一款图片加载框架。Fresco一词的含义是”壁画“。 示例用法进行全局初始化 1234567public class MyApplication extends Applica">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fresco图片加载库源码学习">
+<meta property="og:url" content="http://example.com/2021/05/07/Fresco%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%BA%93%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="ChrisChan的个人博客">
+<meta property="og:description" content="Overview Fresco is a powerful system for displaying images in Android applications. ——官方说明  Fresco是Facebook公司开源的一款图片加载框架。Fresco一词的含义是”壁画“。 示例用法进行全局初始化 1234567public class MyApplication extends Applica">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-05-07T08:40:48.000Z">
+<meta property="article:modified_time" content="2021-05-08T08:26:59.383Z">
+<meta property="article:author" content="ChrisChan">
+<meta property="article:tag" content="图片加载框架">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/05/07/Fresco图片加载库源码学习/"/>
+
+
+
+
+
+  <title>Fresco图片加载库源码学习 | ChrisChan的个人博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ChrisChan的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">解决问题</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/05/07/Fresco%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%BA%93%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ChrisChan的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Fresco图片加载库源码学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-05-07T16:40:48+08:00">
+                2021-05-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4.2k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  21
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><blockquote>
+<p>Fresco is a powerful system for displaying images in Android applications. ——官方说明</p>
+</blockquote>
+<p>Fresco是Facebook公司开源的一款图片加载框架。Fresco一词的含义是”壁画“。</p>
+<h3 id="示例用法"><a href="#示例用法" class="headerlink" title="示例用法"></a>示例用法</h3><p>进行全局初始化</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>.onCreate();</span><br><span class="line">		Fresco.initialize(<span class="keyword">this</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>作为控件使用</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;com.facebook.drawee.view.SimpleDraweeView</span><br><span class="line">    android:id=&quot;@+id/my_image_view&quot;</span><br><span class="line">    android:layout_width=&quot;130dp&quot;</span><br><span class="line">    android:layout_height=&quot;130dp&quot;</span><br><span class="line">    fresco:placeholderImage=&quot;@drawable/my_drawable&quot;</span><br><span class="line">  /&gt;</span><br></pre></td></tr></table></figure>
+<p>设置网络图片源：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Uri uri = Uri.parse(<span class="string">&quot;https://raw.githubusercontent.com/facebook/fresco/gh-pages/static/logo.png&quot;</span>);</span><br><span class="line">SimpleDraweeView draweeView = (SimpleDraweeView) findViewById(R.id.my_image_view);</span><br><span class="line">draweeView.setImageURI(uri);</span><br></pre></td></tr></table></figure>
+
+<p>从初始化开始进行源码的学习</p>
+<h3 id="1-Fresco-initialize-Context-context"><a href="#1-Fresco-initialize-Context-context" class="headerlink" title="1.Fresco.initialize(Context context)"></a>1.Fresco.initialize(Context context)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">  initialize(context, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="meta">@Nullable</span> ImagePipelineConfig imagePipelineConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="meta">@Nullable</span> DraweeConfig draweeConfig)</span> </span>&#123;</span><br><span class="line">  initialize(context, imagePipelineConfig, draweeConfig, <span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    Context context,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="meta">@Nullable</span> ImagePipelineConfig imagePipelineConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="meta">@Nullable</span> DraweeConfig draweeConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">boolean</span> useNativeCode)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;Fresco#initialize&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (sIsInitialized) &#123;</span><br><span class="line">    FLog.w(</span><br><span class="line">        TAG,</span><br><span class="line">        <span class="string">&quot;Fresco has already been initialized! `Fresco.initialize(...)` should only be called &quot;</span></span><br><span class="line">            + <span class="string">&quot;1 single time to avoid memory leaks!&quot;</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    sIsInitialized = <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  NativeCodeSetup.setUseNativeCode(useNativeCode);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!NativeLoader.isInitialized()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">      FrescoSystrace.beginSection(<span class="string">&quot;Fresco.initialize-&gt;SoLoader.init&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      Class&lt;?&gt; clazz =</span><br><span class="line">          Class.forName(<span class="string">&quot;com.facebook.imagepipeline.nativecode.NativeCodeInitializer&quot;</span>);</span><br><span class="line">      clazz.getMethod(<span class="string">&quot;init&quot;</span>, Context.class).invoke(<span class="keyword">null</span>, context);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">      <span class="comment">// Failed to initialize SoLoader</span></span><br><span class="line">      NativeLoader.initIfUninitialized(<span class="keyword">new</span> SystemDelegate());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">      <span class="comment">// Failed to initialize SoLoader</span></span><br><span class="line">      NativeLoader.initIfUninitialized(<span class="keyword">new</span> SystemDelegate());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvocationTargetException e) &#123;</span><br><span class="line">      <span class="comment">// Failed to initialize SoLoader</span></span><br><span class="line">      NativeLoader.initIfUninitialized(<span class="keyword">new</span> SystemDelegate());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</span><br><span class="line">      <span class="comment">// Failed to initialize SoLoader</span></span><br><span class="line">      NativeLoader.initIfUninitialized(<span class="keyword">new</span> SystemDelegate());</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">        FrescoSystrace.endSection();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// we should always use the application context to avoid memory leaks</span></span><br><span class="line">  context = context.getApplicationContext();</span><br><span class="line">  <span class="keyword">if</span> (imagePipelineConfig == <span class="keyword">null</span>) &#123;</span><br><span class="line">    ImagePipelineFactory.initialize(context);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    ImagePipelineFactory.initialize(imagePipelineConfig);</span><br><span class="line">  &#125;</span><br><span class="line">  initializeDrawee(context, draweeConfig);</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Fresco的init()中，主要有以下部分：</p>
+<ul>
+<li>通过Class.forName()将com.facebook.imagepipeline.nativecode.NativeCodeInitializer加载进来</li>
+<li>调用ImagePipelineFactory.initialize()进行初始化</li>
+<li>调用initializeDrawee()进行初始化</li>
+</ul>
+<h3 id="1-1-ImagePipelineFactory-initialize"><a href="#1-1-ImagePipelineFactory-initialize" class="headerlink" title="1.1 ImagePipelineFactory.initialize()"></a>1.1 ImagePipelineFactory.initialize()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;ImagePipelineFactory#initialize&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  initialize(ImagePipelineConfig.newBuilder(context).build());</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用的是同名函数:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(ImagePipelineConfigInterface imagePipelineConfig)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (sInstance != <span class="keyword">null</span>) &#123;</span><br><span class="line">    FLog.w(</span><br><span class="line">        TAG,</span><br><span class="line">        <span class="string">&quot;ImagePipelineFactory has already been initialized! `ImagePipelineFactory.initialize(...)` should only be called once to avoid unexpected behavior.&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  sInstance = <span class="keyword">new</span> ImagePipelineFactory(imagePipelineConfig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里是个单例模式，创建出ImagePipelineFactory的实例</p>
+<h3 id="1-2-Fresco-initializeDrawee"><a href="#1-2-Fresco-initializeDrawee" class="headerlink" title="1.2 Fresco.initializeDrawee()"></a>1.2 Fresco.initializeDrawee()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">initializeDrawee</span><span class="params">(Context context, <span class="meta">@Nullable</span> DraweeConfig draweeConfig)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;Fresco.initializeDrawee&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  sDraweeControllerBuilderSupplier =</span><br><span class="line">      <span class="keyword">new</span> PipelineDraweeControllerBuilderSupplier(context, draweeConfig);</span><br><span class="line">  SimpleDraweeView.initialize(sDraweeControllerBuilderSupplier);</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建出PipelineDraweeControllerBuilderSupplier实例，随后调用SimpleDraweeView的initialize()函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">initialize</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    Supplier&lt;? extends AbstractDraweeControllerBuilder&gt; draweeControllerBuilderSupplier)</span> </span>&#123;</span><br><span class="line">  sDraweecontrollerbuildersupplier = draweeControllerBuilderSupplier;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将传入的draweeControllerBuilderSupplier赋值给成员变量</p>
+<p><strong>上面就是Fresco的初始化过程，接下来看下使用时调用draweeView.setImageURI(uri)是如何完成网络图片的加载的</strong></p>
+<h3 id="2-SimpleDraweeView-setImageURI-uri"><a href="#2-SimpleDraweeView-setImageURI-uri" class="headerlink" title="2. SimpleDraweeView.setImageURI(uri)"></a>2. SimpleDraweeView.setImageURI(uri)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setImageURI</span><span class="params">(Uri uri)</span> </span>&#123;</span><br><span class="line">  setImageURI(uri, <span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setImageURI</span><span class="params">(Uri uri, <span class="meta">@Nullable</span> Object callerContext)</span> </span>&#123;</span><br><span class="line">  DraweeController controller =</span><br><span class="line">      mControllerBuilder</span><br><span class="line">          .setCallerContext(callerContext)</span><br><span class="line">          .setUri(uri)</span><br><span class="line">          .setOldController(getController())</span><br><span class="line">          .build();</span><br><span class="line">  setController(controller);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先是通过builder模式构造出一个DraweeController，然后调用setController()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setController</span><span class="params">(<span class="meta">@Nullable</span> DraweeController draweeController)</span> </span>&#123;</span><br><span class="line">  mDraweeHolder.setController(draweeController);</span><br><span class="line">  <span class="keyword">super</span>.setImageDrawable(mDraweeHolder.getTopLevelDrawable());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里有两部分：</p>
+<ul>
+<li>DraweeHolder.setController()</li>
+<li>这里的super就是原生的ImageView，因此关注的应该是后面mDraweeHolder.getTopLevelDrawable()的实现</li>
+</ul>
+<h3 id="2-1-DraweeHolder-setController"><a href="#2-1-DraweeHolder-setController" class="headerlink" title="2.1 DraweeHolder.setController()"></a>2.1 DraweeHolder.setController()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setController</span><span class="params">(<span class="meta">@Nullable</span> DraweeController draweeController)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> wasAttached = mIsControllerAttached;</span><br><span class="line">  <span class="keyword">if</span> (wasAttached) &#123;</span><br><span class="line">    detachController();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Clear the old controller</span></span><br><span class="line">  <span class="keyword">if</span> (isControllerValid()) &#123;</span><br><span class="line">    mEventTracker.recordEvent(Event.ON_CLEAR_OLD_CONTROLLER);</span><br><span class="line">    mController.setHierarchy(<span class="keyword">null</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  mController = draweeController;</span><br><span class="line">  <span class="keyword">if</span> (mController != <span class="keyword">null</span>) &#123;</span><br><span class="line">    mEventTracker.recordEvent(Event.ON_SET_CONTROLLER);</span><br><span class="line">    mController.setHierarchy(mHierarchy);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    mEventTracker.recordEvent(Event.ON_CLEAR_CONTROLLER);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (wasAttached) &#123;</span><br><span class="line">    attachController();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里主要的工作是调用attchController():</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">attachController</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (mIsControllerAttached) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  mEventTracker.recordEvent(Event.ON_ATTACH_CONTROLLER);</span><br><span class="line">  mIsControllerAttached = <span class="keyword">true</span>;</span><br><span class="line">  <span class="keyword">if</span> (mController != <span class="keyword">null</span> &amp;&amp; mController.getHierarchy() != <span class="keyword">null</span>) &#123;</span><br><span class="line">    mController.onAttach();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>触发的是mController的onAttach()回调，这里的mController实现类是PipelineDraweeController，但PipelineDraweeController没有重写onAttach()，看下PipelineDraweeController父类AbstractDraweeController的onAttach()函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAttach</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;AbstractDraweeController#onAttach&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (FLog.isLoggable(FLog.VERBOSE)) &#123;</span><br><span class="line">    FLog.v(</span><br><span class="line">        TAG,</span><br><span class="line">        <span class="string">&quot;controller %x %s: onAttach: %s&quot;</span>,</span><br><span class="line">        System.identityHashCode(<span class="keyword">this</span>),</span><br><span class="line">        mId,</span><br><span class="line">        mIsRequestSubmitted ? <span class="string">&quot;request already submitted&quot;</span> : <span class="string">&quot;request needs submit&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  mEventTracker.recordEvent(Event.ON_ATTACH_CONTROLLER);</span><br><span class="line">  Preconditions.checkNotNull(mSettableDraweeHierarchy);</span><br><span class="line">  mDeferredReleaser.cancelDeferredRelease(<span class="keyword">this</span>);</span><br><span class="line">  mIsAttached = <span class="keyword">true</span>;</span><br><span class="line">  <span class="keyword">if</span> (!mIsRequestSubmitted) &#123;</span><br><span class="line">    submitRequest();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在onAttach()中会调用submitRequest()方法，从方法名中可以猜测这个方法的作用是用来发起图片请求的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">submitRequest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;AbstractDraweeController#submitRequest&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">final</span> T closeableImage = getCachedImage();</span><br><span class="line">  <span class="keyword">if</span> (closeableImage != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">      FrescoSystrace.beginSection(<span class="string">&quot;AbstractDraweeController#submitRequest-&gt;cache&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    mDataSource = <span class="keyword">null</span>;</span><br><span class="line">    mIsRequestSubmitted = <span class="keyword">true</span>;</span><br><span class="line">    mHasFetchFailed = <span class="keyword">false</span>;</span><br><span class="line">    mEventTracker.recordEvent(Event.ON_SUBMIT_CACHE_HIT);</span><br><span class="line">    reportSubmit(mDataSource, getImageInfo(closeableImage));</span><br><span class="line">    onImageLoadedFromCacheImmediately(mId, closeableImage);</span><br><span class="line">    onNewResultInternal(mId, mDataSource, closeableImage, <span class="number">1.0f</span>, <span class="keyword">true</span>, <span class="keyword">true</span>, <span class="keyword">true</span>);</span><br><span class="line">    <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">      FrescoSystrace.endSection();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">      FrescoSystrace.endSection();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  mEventTracker.recordEvent(Event.ON_DATASOURCE_SUBMIT);</span><br><span class="line">  mSettableDraweeHierarchy.setProgress(<span class="number">0</span>, <span class="keyword">true</span>);</span><br><span class="line">  mIsRequestSubmitted = <span class="keyword">true</span>;</span><br><span class="line">  mHasFetchFailed = <span class="keyword">false</span>;</span><br><span class="line">  mDataSource = getDataSource();</span><br><span class="line">  reportSubmit(mDataSource, <span class="keyword">null</span>);</span><br><span class="line">  <span class="comment">// ……</span></span><br><span class="line">  <span class="keyword">final</span> String id = mId;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">boolean</span> wasImmediate = mDataSource.hasResult();</span><br><span class="line">  <span class="keyword">final</span> DataSubscriber&lt;T&gt; dataSubscriber =</span><br><span class="line">      <span class="keyword">new</span> BaseDataSubscriber&lt;T&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNewResultImpl</span><span class="params">(DataSource&lt;T&gt; dataSource)</span> </span>&#123;</span><br><span class="line">          <span class="keyword">boolean</span> isFinished = dataSource.isFinished();</span><br><span class="line">          <span class="keyword">boolean</span> hasMultipleResults = dataSource.hasMultipleResults();</span><br><span class="line">          <span class="keyword">float</span> progress = dataSource.getProgress();</span><br><span class="line">          T image = dataSource.getResult();</span><br><span class="line">          <span class="keyword">if</span> (image != <span class="keyword">null</span>) &#123;</span><br><span class="line">            onNewResultInternal(</span><br><span class="line">                id, dataSource, image, progress, isFinished, wasImmediate, hasMultipleResults);</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isFinished) &#123;</span><br><span class="line">            onFailureInternal(id, dataSource, <span class="keyword">new</span> NullPointerException(), <span class="comment">/* isFinished */</span> <span class="keyword">true</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailureImpl</span><span class="params">(DataSource&lt;T&gt; dataSource)</span> </span>&#123;</span><br><span class="line">          onFailureInternal(id, dataSource, dataSource.getFailureCause(), <span class="comment">/* isFinished */</span> <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onProgressUpdate</span><span class="params">(DataSource&lt;T&gt; dataSource)</span> </span>&#123;</span><br><span class="line">          <span class="keyword">boolean</span> isFinished = dataSource.isFinished();</span><br><span class="line">          <span class="keyword">float</span> progress = dataSource.getProgress();</span><br><span class="line">          onProgressUpdateInternal(id, dataSource, progress, isFinished);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;;</span><br><span class="line">  mDataSource.subscribe(dataSubscriber, mUiThreadImmediateExecutor);</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>函数略长，分成以下几个部分：</p>
+<ul>
+<li>1.通过getCachedImage()方法尝试从内存缓存中读取图片，如果能拿到，则调用相关回调后直接返回</li>
+<li>2.如果通过getCachedImage()拿不到缓存的图片，则调用getDataSource()方法获取数据源mDataSource</li>
+<li>3.定义DataSubscriber，随后通过mDataSource.subscribe()传入DataSubscriber进行数据的订阅操作<br>下面具体看下这3部分的实现：</li>
+</ul>
+<h3 id="2-1-1-PipelineDraweeController-getCachedImage"><a href="#2-1-1-PipelineDraweeController-getCachedImage" class="headerlink" title="2.1.1 PipelineDraweeController.getCachedImage()"></a>2.1.1 PipelineDraweeController.getCachedImage()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="meta">@Nullable</span> <span class="function">CloseableReference&lt;CloseableImage&gt; <span class="title">getCachedImage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;PipelineDraweeController#getCachedImage&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (mMemoryCache == <span class="keyword">null</span> || mCacheKey == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// We get the CacheKey</span></span><br><span class="line">    CloseableReference&lt;CloseableImage&gt; closeableImage = mMemoryCache.get(mCacheKey);</span><br><span class="line">    <span class="keyword">if</span> (closeableImage != <span class="keyword">null</span> &amp;&amp; !closeableImage.get().getQualityInfo().isOfFullQuality()) &#123;</span><br><span class="line">      closeableImage.close();</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> closeableImage;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">      FrescoSystrace.endSection();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的CloseableImage是对Bitmap的一个封装，通过它可以获得我们需要的Bitmap；这里内存缓存实现的策略是常见的LRU策略，底层是LinkedHashMap实现</p>
+<h3 id="2-1-2-PipelineDraweeController-getDataSource"><a href="#2-1-2-PipelineDraweeController-getDataSource" class="headerlink" title="2.1.2 PipelineDraweeController.getDataSource()"></a>2.1.2 PipelineDraweeController.getDataSource()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> DataSource&lt;CloseableReference&lt;CloseableImage&gt;&gt; getDataSource() &#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;PipelineDraweeController#getDataSource&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (FLog.isLoggable(FLog.VERBOSE)) &#123;</span><br><span class="line">    FLog.v(TAG, <span class="string">&quot;controller %x: getDataSource&quot;</span>, System.identityHashCode(<span class="keyword">this</span>));</span><br><span class="line">  &#125;</span><br><span class="line">  DataSource&lt;CloseableReference&lt;CloseableImage&gt;&gt; result = mDataSourceSupplier.get();</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的mDataSourceSupplier的实现类是一个匿名类，实现在AbstractDraweeControllerBuilder中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Supplier&lt;DataSource&lt;IMAGE&gt;&gt; getDataSourceSupplierForRequest(</span><br><span class="line">    <span class="keyword">final</span> DraweeController controller,</span><br><span class="line">    <span class="keyword">final</span> String controllerId,</span><br><span class="line">    <span class="keyword">final</span> REQUEST imageRequest,</span><br><span class="line">    <span class="keyword">final</span> CacheLevel cacheLevel) &#123;</span><br><span class="line">  <span class="keyword">final</span> Object callerContext = getCallerContext();</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Supplier&lt;DataSource&lt;IMAGE&gt;&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource&lt;IMAGE&gt; <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> getDataSourceForRequest(</span><br><span class="line">          controller, controllerId, imageRequest, callerContext, cacheLevel);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> Objects.toStringHelper(<span class="keyword">this</span>).add(<span class="string">&quot;request&quot;</span>, imageRequest.toString()).toString();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从这里可以看出，对mDataSourceSupplier调用get()方法，实际上是调用到getDataSourceForRequest()方法，而这个方法是一个抽象方法，在PipelineDraweeController使用的实现是：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> DataSource&lt;CloseableReference&lt;CloseableImage&gt;&gt; getDataSourceForRequest(</span><br><span class="line">    DraweeController controller,</span><br><span class="line">    String controllerId,</span><br><span class="line">    ImageRequest imageRequest,</span><br><span class="line">    Object callerContext,</span><br><span class="line">    AbstractDraweeControllerBuilder.CacheLevel cacheLevel) &#123;</span><br><span class="line">  <span class="keyword">return</span> mImagePipeline.fetchDecodedImage(</span><br><span class="line">      imageRequest,</span><br><span class="line">      callerContext,</span><br><span class="line">      convertCacheLevelToRequestLevel(cacheLevel),</span><br><span class="line">      getRequestListener(controller),</span><br><span class="line">      controllerId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-2-1-ImagePipeline-fetchDecodedImage"><a href="#2-1-2-1-ImagePipeline-fetchDecodedImage" class="headerlink" title="2.1.2.1 ImagePipeline.fetchDecodedImage()"></a>2.1.2.1 ImagePipeline.fetchDecodedImage()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> DataSource&lt;CloseableReference&lt;CloseableImage&gt;&gt; fetchDecodedImage(</span><br><span class="line">    ImageRequest imageRequest,</span><br><span class="line">    Object callerContext,</span><br><span class="line">    ImageRequest.RequestLevel lowestPermittedRequestLevelOnSubmit,</span><br><span class="line">    <span class="meta">@Nullable</span> RequestListener requestListener,</span><br><span class="line">    <span class="meta">@Nullable</span> String uiComponentId) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    Producer&lt;CloseableReference&lt;CloseableImage&gt;&gt; producerSequence =</span><br><span class="line">        mProducerSequenceFactory.getDecodedImageProducerSequence(imageRequest);</span><br><span class="line">    <span class="keyword">return</span> submitFetchRequest(</span><br><span class="line">        producerSequence,</span><br><span class="line">        imageRequest,</span><br><span class="line">        lowestPermittedRequestLevelOnSubmit,</span><br><span class="line">        callerContext,</span><br><span class="line">        requestListener,</span><br><span class="line">        uiComponentId);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception exception) &#123;</span><br><span class="line">    <span class="keyword">return</span> DataSources.immediateFailedDataSource(exception);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个方法中，创建出了一个Producer&lt;CloseableReference<CloseableImage>&gt;对象，调用submitFetchRequest方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; DataSource&lt;CloseableReference&lt;T&gt;&gt; submitFetchRequest(</span><br><span class="line">    Producer&lt;CloseableReference&lt;T&gt;&gt; producerSequence,</span><br><span class="line">    ImageRequest imageRequest,</span><br><span class="line">    ImageRequest.RequestLevel lowestPermittedRequestLevelOnSubmit,</span><br><span class="line">    Object callerContext,</span><br><span class="line">    <span class="meta">@Nullable</span> RequestListener requestListener,</span><br><span class="line">    <span class="meta">@Nullable</span> String uiComponentId) &#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;ImagePipeline#submitFetchRequest&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">final</span> RequestListener2 requestListener2 =</span><br><span class="line">      <span class="keyword">new</span> InternalRequestListener(</span><br><span class="line">          getRequestListenerForRequest(imageRequest, requestListener), mRequestListener2);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (mCallerContextVerifier != <span class="keyword">null</span>) &#123;</span><br><span class="line">    mCallerContextVerifier.verifyCallerContext(callerContext, <span class="keyword">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    ImageRequest.RequestLevel lowestPermittedRequestLevel =</span><br><span class="line">        ImageRequest.RequestLevel.getMax(</span><br><span class="line">            imageRequest.getLowestPermittedRequestLevel(), lowestPermittedRequestLevelOnSubmit);</span><br><span class="line">    SettableProducerContext settableProducerContext =</span><br><span class="line">        <span class="keyword">new</span> SettableProducerContext(</span><br><span class="line">            imageRequest,</span><br><span class="line">            generateUniqueFutureId(),</span><br><span class="line">            uiComponentId,</span><br><span class="line">            requestListener2,</span><br><span class="line">            callerContext,</span><br><span class="line">            lowestPermittedRequestLevel,</span><br><span class="line">            <span class="comment">/* isPrefetch */</span> <span class="keyword">false</span>,</span><br><span class="line">            imageRequest.getProgressiveRenderingEnabled()</span><br><span class="line">                || !UriUtil.isNetworkUri(imageRequest.getSourceUri()),</span><br><span class="line">            imageRequest.getPriority(),</span><br><span class="line">            mConfig);</span><br><span class="line">    <span class="keyword">return</span> CloseableProducerToDataSourceAdapter.create(</span><br><span class="line">        producerSequence, settableProducerContext, requestListener2);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception exception) &#123;</span><br><span class="line">    <span class="keyword">return</span> DataSources.immediateFailedDataSource(exception);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">      FrescoSystrace.endSection();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法里实际上没有执行图片的请求操作，从方法名里的submit也可以看出只是”提交这”个请求，接下来会调用CloseableProducerToDataSourceAdapter.create()返回：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; DataSource&lt;CloseableReference&lt;T&gt;&gt; create(</span><br><span class="line">    Producer&lt;CloseableReference&lt;T&gt;&gt; producer,</span><br><span class="line">    SettableProducerContext settableProducerContext,</span><br><span class="line">    RequestListener2 listener) &#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;CloseableProducerToDataSourceAdapter#create&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  CloseableProducerToDataSourceAdapter&lt;T&gt; result =</span><br><span class="line">      <span class="keyword">new</span> CloseableProducerToDataSourceAdapter&lt;T&gt;(producer, settableProducerContext, listener);</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>构造CloseableProducerToDataSourceAdapter实例作为结果返回，看下CloseableProducerToDataSourceAdapter的构造函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">CloseableProducerToDataSourceAdapter</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    Producer&lt;CloseableReference&lt;T&gt;&gt; producer,</span></span></span><br><span class="line"><span class="function"><span class="params">    SettableProducerContext settableProducerContext,</span></span></span><br><span class="line"><span class="function"><span class="params">    RequestListener2 listener)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">super</span>(producer, settableProducerContext, listener);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用的是超类的构造函数，超类是AbstractProducerToDataSourceAdapter</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractProducerToDataSourceAdapter</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    Producer&lt;T&gt; producer,</span></span></span><br><span class="line"><span class="function"><span class="params">    SettableProducerContext settableProducerContext,</span></span></span><br><span class="line"><span class="function"><span class="params">    RequestListener2 requestListener)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;AbstractProducerToDataSourceAdapter()&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  mSettableProducerContext = settableProducerContext;</span><br><span class="line">  mRequestListener = requestListener;</span><br><span class="line">  setInitialExtras();</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;AbstractProducerToDataSourceAdapter()-&gt;onRequestStart&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  mRequestListener.onRequestStart(mSettableProducerContext);</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;AbstractProducerToDataSourceAdapter()-&gt;produceResult&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  producer.produceResults(createConsumer(), settableProducerContext);</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AbstractProducerToDataSourceAdapter的构造函数中多数是日志记录的代码，最关键的代码其实是这一行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">producer.produceResults(createConsumer(), settableProducerContext);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>下面有两个点分别说一下：</p>
+<ul>
+<li>producer.produceResults()</li>
+<li>createConsumer()</li>
+</ul>
+<h3 id="2-1-2-2-Producer-produceResults"><a href="#2-1-2-2-Producer-produceResults" class="headerlink" title="2.1.2.2 Producer.produceResults()"></a>2.1.2.2 Producer.produceResults()</h3><p>在Fresco中，Producer是一个接口，负责真正的获取图片的工作，对于网络图片而言，实现类是NetworkFetchProducer：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">produceResults</span><span class="params">(Consumer&lt;EncodedImage&gt; consumer, ProducerContext context)</span> </span>&#123;</span><br><span class="line">  context.getProducerListener().onProducerStart(context, PRODUCER_NAME);</span><br><span class="line">  <span class="keyword">final</span> FetchState fetchState = mNetworkFetcher.createFetchState(consumer, context);</span><br><span class="line">  mNetworkFetcher.fetch(</span><br><span class="line">      fetchState,</span><br><span class="line">      <span class="keyword">new</span> NetworkFetcher.Callback() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(InputStream response, <span class="keyword">int</span> responseLength)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">          <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">            FrescoSystrace.beginSection(<span class="string">&quot;NetworkFetcher-&gt;onResponse&quot;</span>);</span><br><span class="line">          &#125;</span><br><span class="line">          NetworkFetchProducer.<span class="keyword">this</span>.onResponse(fetchState, response, responseLength);</span><br><span class="line">          <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">            FrescoSystrace.endSection();</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Throwable throwable)</span> </span>&#123;</span><br><span class="line">          NetworkFetchProducer.<span class="keyword">this</span>.onFailure(fetchState, throwable);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCancellation</span><span class="params">()</span> </span>&#123;</span><br><span class="line">          NetworkFetchProducer.<span class="keyword">this</span>.onCancellation(fetchState);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这里，是交给mNetworkFetcher.fetch()方法完成网络请求，mNetworkFetcher是NetworkFetcher类型，NetworkFetcher是一个接口，在工程中能够找到以下实现类：</p>
+<ul>
+<li>BaseNetworkFetcher</li>
+<li>HttpUrlConnectionNetworkFetcher</li>
+<li>OkHttpNetworkFetcher</li>
+<li>PriorityNetworkFetcher</li>
+<li>RecordingNetworkFetcher</li>
+<li>VolleyNetworkFetcher</li>
+</ul>
+<p>从命名也可以看出，他们是通过OkHttp/Volley等不同的网络请求框架实现的网络请求；这里我们不再关注内部的网络请求是如何实现的，只需要知道最后能够得到网络图片对应的InputStream<br>拿到InputStream之后，会调用onResponse()方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    FetchState fetchState, InputStream responseData, <span class="keyword">int</span> responseContentLength)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> PooledByteBufferOutputStream pooledOutputStream;</span><br><span class="line">  <span class="keyword">if</span> (responseContentLength &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    pooledOutputStream = mPooledByteBufferFactory.newOutputStream(responseContentLength);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    pooledOutputStream = mPooledByteBufferFactory.newOutputStream();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">byte</span>[] ioArray = mByteArrayPool.get(READ_SIZE);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">int</span> length;</span><br><span class="line">    <span class="keyword">while</span> ((length = responseData.read(ioArray)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        pooledOutputStream.write(ioArray, <span class="number">0</span>, length);</span><br><span class="line">        maybeHandleIntermediateResult(pooledOutputStream, fetchState);</span><br><span class="line">        <span class="keyword">float</span> progress = calculateProgress(pooledOutputStream.size(), responseContentLength);</span><br><span class="line">        fetchState.getConsumer().onProgressUpdate(progress);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mNetworkFetcher.onFetchCompletion(fetchState, pooledOutputStream.size());</span><br><span class="line">    handleFinalResult(pooledOutputStream, fetchState);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    mByteArrayPool.release(ioArray);</span><br><span class="line">    pooledOutputStream.close();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法有以下几个要点：</p>
+<ul>
+<li>通过calculateProgress()方法计算出进度并通知给Consumer</li>
+<li>当流数据读取完毕，调用handleFinalResult()方法<br>下面看下handleFinalResult()的实现：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">handleFinalResult</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    PooledByteBufferOutputStream pooledOutputStream, FetchState fetchState)</span> </span>&#123;</span><br><span class="line">  Map&lt;String, String&gt; extraMap = getExtraMap(fetchState, pooledOutputStream.size());</span><br><span class="line">  ProducerListener2 listener = fetchState.getListener();</span><br><span class="line">  listener.onProducerFinishWithSuccess(fetchState.getContext(), PRODUCER_NAME, extraMap);</span><br><span class="line">  listener.onUltimateProducerReached(fetchState.getContext(), PRODUCER_NAME, <span class="keyword">true</span>);</span><br><span class="line">  fetchState.getContext().putOriginExtra(<span class="string">&quot;network&quot;</span>);</span><br><span class="line">  notifyConsumer(</span><br><span class="line">      pooledOutputStream,</span><br><span class="line">      Consumer.IS_LAST | fetchState.getOnNewResultStatusFlags(),</span><br><span class="line">      fetchState.getResponseBytesRange(),</span><br><span class="line">      fetchState.getConsumer(),</span><br><span class="line">      fetchState.getContext());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+这里会完成最重要的工作：调用notifyConsumer()来对数据进行消费</li>
+</ul>
+<p><strong>小结，至此，已经从远端网络请求得到图片的数据流，后面是Consumer对这个流的处理工作，这就是前面createConsumer()方法的内容</strong></p>
+<h3 id="2-1-2-3-AbstractProducerToDataSourceAdapter-createConsumer"><a href="#2-1-2-3-AbstractProducerToDataSourceAdapter-createConsumer" class="headerlink" title="2.1.2.3 AbstractProducerToDataSourceAdapter.createConsumer()"></a>2.1.2.3 AbstractProducerToDataSourceAdapter.createConsumer()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> Consumer&lt;T&gt; <span class="title">createConsumer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> BaseConsumer&lt;T&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onNewResultImpl</span><span class="params">(<span class="meta">@Nullable</span> T newResult, <span class="meta">@Status</span> <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">      AbstractProducerToDataSourceAdapter.<span class="keyword">this</span>.onNewResultImpl(</span><br><span class="line">          newResult, status, mSettableProducerContext);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onFailureImpl</span><span class="params">(Throwable throwable)</span> </span>&#123;</span><br><span class="line">      AbstractProducerToDataSourceAdapter.<span class="keyword">this</span>.onFailureImpl(throwable);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCancellationImpl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      AbstractProducerToDataSourceAdapter.<span class="keyword">this</span>.onCancellationImpl();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onProgressUpdateImpl</span><span class="params">(<span class="keyword">float</span> progress)</span> </span>&#123;</span><br><span class="line">      AbstractProducerToDataSourceAdapter.<span class="keyword">this</span>.setProgress(progress);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在onNewResultImpl()中回调AbstractProducerToDataSourceAdapter的onNewResultImpl()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onNewResultImpl</span><span class="params">(<span class="meta">@Nullable</span> T result, <span class="keyword">int</span> status, ProducerContext producerContext)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> isLast = BaseConsumer.isLast(status);</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">super</span>.setResult(result, isLast, getExtras(producerContext))) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isLast) &#123;</span><br><span class="line">      mRequestListener.onRequestSuccess(mSettableProducerContext);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>会调用父类的setResult()方法，如果是最终结果，还会触发mRequestListener的回调；看下父类的setResult()方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">setResult</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">      <span class="meta">@Nullable</span> T value, <span class="keyword">boolean</span> isLast, <span class="meta">@Nullable</span> Map&lt;String, Object&gt; extras)</span> </span>&#123;</span><br><span class="line">    setExtras(extras);</span><br><span class="line">    <span class="keyword">boolean</span> result = setResultInternal(value, isLast);</span><br><span class="line">    <span class="keyword">if</span> (result) &#123;</span><br><span class="line">      notifyDataSubscribers();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>这里很关键的一点，会调用notifyDataSubscribers()来通知观察者</strong></p>
+<p><strong>小结上面就是PipelineDraweeController.getDataSource()部分的内容最终会拿到CloseableProducerToDataSourceAdapter这个DataSource；并且在获取构造DataSource的过程中已经完成了图片请求，接下来关注的是对DataSource的subscribe()方法调用</strong></p>
+<h3 id="2-1-3-DataSource-subscribe-final-DataSubscriber-lt-T-gt-dataSubscriber-final-Executor-executor"><a href="#2-1-3-DataSource-subscribe-final-DataSubscriber-lt-T-gt-dataSubscriber-final-Executor-executor" class="headerlink" title="2.1.3   DataSource.subscribe(final DataSubscriber&lt;T&gt; dataSubscriber, final Executor executor)"></a>2.1.3   DataSource.subscribe(final DataSubscriber&lt;T&gt; dataSubscriber, final Executor executor)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(<span class="keyword">final</span> DataSubscriber&lt;T&gt; dataSubscriber, <span class="keyword">final</span> Executor executor)</span> </span>&#123;</span><br><span class="line">  Preconditions.checkNotNull(dataSubscriber);</span><br><span class="line">  Preconditions.checkNotNull(executor);</span><br><span class="line">  <span class="keyword">boolean</span> shouldNotify;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mIsClosed) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDataSourceStatus == DataSourceStatus.IN_PROGRESS) &#123;</span><br><span class="line">      mSubscribers.add(Pair.create(dataSubscriber, executor));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    shouldNotify = hasResult() || isFinished() || wasCancelled();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (shouldNotify) &#123;</span><br><span class="line">    notifyDataSubscriber(dataSubscriber, executor, hasFailed(), wasCancelled());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>会调用到notifyDataSubscriber()方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">notifyDataSubscriber</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">final</span> DataSubscriber&lt;T&gt; dataSubscriber,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">final</span> Executor executor,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">final</span> <span class="keyword">boolean</span> isFailure,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">final</span> <span class="keyword">boolean</span> isCancellation)</span> </span>&#123;</span><br><span class="line">  Runnable runnable =</span><br><span class="line">      <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">          <span class="keyword">if</span> (isFailure) &#123;</span><br><span class="line">            dataSubscriber.onFailure(AbstractDataSource.<span class="keyword">this</span>);</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isCancellation) &#123;</span><br><span class="line">            dataSubscriber.onCancellation(AbstractDataSource.<span class="keyword">this</span>);</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            dataSubscriber.onNewResult(AbstractDataSource.<span class="keyword">this</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;;</span><br><span class="line">  <span class="keyword">final</span> DataSourceInstrumenter instrumenter = getDataSourceInstrumenter();</span><br><span class="line">  <span class="keyword">if</span> (instrumenter != <span class="keyword">null</span>) &#123;</span><br><span class="line">    runnable = instrumenter.decorateRunnable(runnable, <span class="string">&quot;AbstractDataSource_notifyDataSubscriber&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  executor.execute(runnable);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先是调用getDataSourceInstrumenter()方法尝试获取实现类的DataSourceInstrumenter</li>
+<li>如果获得的DataSourceInstrumenter不为空，则对runnable进行decorateRunnable操作</li>
+<li>使用传入的Executor执行runnable</li>
+</ul>
+<p>在源码中看了一下getDataSourceInstrumenter()如果用户代码没有介入，默认拿到的应该是空，在execute()执行的，其实就是传入的dataSubscriber的各个回调方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> DataSubscriber&lt;T&gt; dataSubscriber =</span><br><span class="line">        <span class="keyword">new</span> BaseDataSubscriber&lt;T&gt;() &#123;</span><br><span class="line">          <span class="meta">@Override</span></span><br><span class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNewResultImpl</span><span class="params">(DataSource&lt;T&gt; dataSource)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// isFinished must be obtained before image, otherwise we might set intermediate result</span></span><br><span class="line">            <span class="comment">// as final image.</span></span><br><span class="line">            <span class="keyword">boolean</span> isFinished = dataSource.isFinished();</span><br><span class="line">            <span class="keyword">boolean</span> hasMultipleResults = dataSource.hasMultipleResults();</span><br><span class="line">            <span class="keyword">float</span> progress = dataSource.getProgress();</span><br><span class="line">            T image = dataSource.getResult();</span><br><span class="line">            <span class="keyword">if</span> (image != <span class="keyword">null</span>) &#123;</span><br><span class="line">              onNewResultInternal(</span><br><span class="line">                  id, dataSource, image, progress, isFinished, wasImmediate, hasMultipleResults);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isFinished) &#123;</span><br><span class="line">              onFailureInternal(id, dataSource, <span class="keyword">new</span> NullPointerException(), <span class="comment">/* isFinished */</span> <span class="keyword">true</span>);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          <span class="meta">@Override</span></span><br><span class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailureImpl</span><span class="params">(DataSource&lt;T&gt; dataSource)</span> </span>&#123;</span><br><span class="line">            onFailureInternal(id, dataSource, dataSource.getFailureCause(), <span class="comment">/* isFinished */</span> <span class="keyword">true</span>);</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          <span class="meta">@Override</span></span><br><span class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onProgressUpdate</span><span class="params">(DataSource&lt;T&gt; dataSource)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">boolean</span> isFinished = dataSource.isFinished();</span><br><span class="line">            <span class="keyword">float</span> progress = dataSource.getProgress();</span><br><span class="line">            onProgressUpdateInternal(id, dataSource, progress, isFinished);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;;</span><br></pre></td></tr></table></figure>
+<p>在onNewResultImpl()的回调中，通过dataSource.getResult()在主线程得到了图片，然后通过触发onNewResultInternal()回调：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onNewResultInternal</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    String id,</span></span></span><br><span class="line"><span class="function"><span class="params">    DataSource&lt;T&gt; dataSource,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="meta">@Nullable</span> T image,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">float</span> progress,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">boolean</span> isFinished,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">boolean</span> wasImmediate,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">boolean</span> deliverTempResult)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">    mEventTracker.recordEvent(</span><br><span class="line">        isFinished ? Event.ON_DATASOURCE_RESULT : Event.ON_DATASOURCE_RESULT_INT);</span><br><span class="line">    <span class="comment">// create drawable</span></span><br><span class="line">    Drawable drawable;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      drawable = createDrawable(image);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception exception) &#123;</span><br><span class="line">      <span class="comment">// ……</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    T previousImage = mFetchedImage;</span><br><span class="line">    Drawable previousDrawable = mDrawable;</span><br><span class="line">    mFetchedImage = image;</span><br><span class="line">    mDrawable = drawable;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">// set the new image</span></span><br><span class="line">      <span class="keyword">if</span> (isFinished) &#123;</span><br><span class="line">        logMessageAndImage(<span class="string">&quot;set_final_result @ onNewResult&quot;</span>, image);</span><br><span class="line">        mDataSource = <span class="keyword">null</span>;</span><br><span class="line">        mSettableDraweeHierarchy.setImage(drawable, <span class="number">1f</span>, wasImmediate);</span><br><span class="line">        reportSuccess(id, image, dataSource);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (deliverTempResult) &#123;</span><br><span class="line">        logMessageAndImage(<span class="string">&quot;set_temporary_result @ onNewResult&quot;</span>, image);</span><br><span class="line">        mSettableDraweeHierarchy.setImage(drawable, <span class="number">1f</span>, wasImmediate);</span><br><span class="line">        reportSuccess(id, image, dataSource);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        logMessageAndImage(<span class="string">&quot;set_intermediate_result @ onNewResult&quot;</span>, image);</span><br><span class="line">        mSettableDraweeHierarchy.setImage(drawable, progress, wasImmediate);</span><br><span class="line">        reportIntermediateSet(id, image);</span><br><span class="line">        <span class="comment">// IMPORTANT: do not execute any instance-specific code after this point</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (previousDrawable != <span class="keyword">null</span> &amp;&amp; previousDrawable != drawable) &#123;</span><br><span class="line">        releaseDrawable(previousDrawable);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (previousImage != <span class="keyword">null</span> &amp;&amp; previousImage != image) &#123;</span><br><span class="line">        logMessageAndImage(<span class="string">&quot;release_previous_result @ onNewResult&quot;</span>, previousImage);</span><br><span class="line">        releaseImage(previousImage);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="comment">// ……</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>原函数较长，删掉注释和一些异常处理的代码之后，有如下要点：</p>
+<ul>
+<li>将得到的image，转换成Drawable对象</li>
+<li>调用mSettableDraweeHierarchy的setImage()方法把这个Drawable对象设置进去，这里的mSettableDraweeHierarchy是GenericDraweeHierarchy类型<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setImage</span><span class="params">(Drawable drawable, <span class="keyword">float</span> progress, <span class="keyword">boolean</span> immediate)</span> </span>&#123;</span><br><span class="line">  drawable = WrappingUtils.maybeApplyLeafRounding(drawable, mRoundingParams, mResources);</span><br><span class="line">  drawable.mutate();</span><br><span class="line">  mActualImageWrapper.setDrawable(drawable);</span><br><span class="line">  mFadeDrawable.beginBatchMode();</span><br><span class="line">  fadeOutBranches();</span><br><span class="line">  fadeInLayer(ACTUAL_IMAGE_INDEX);</span><br><span class="line">  setProgress(progress);</span><br><span class="line">  <span class="keyword">if</span> (immediate) &#123;</span><br><span class="line">    mFadeDrawable.finishTransitionImmediately();</span><br><span class="line">  &#125;</span><br><span class="line">  mFadeDrawable.endBatchMode();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+这里关键的代码是调用mActualImageWrapper.setDrawable(drawable);把得到的图片对应的drawable设置到mActualImageWrapper这个成员变量上</li>
+</ul>
+<p><strong>至此，我们完成了DraweeHolder.setController()的这一部分操作，接下来看下mDraweeHolder.getTopLevelDrawable()的实现：</strong></p>
+<h3 id="2-2-DraweeHolder-getTopLevelDrawable"><a href="#2-2-DraweeHolder-getTopLevelDrawable" class="headerlink" title="2.2 DraweeHolder.getTopLevelDrawable()"></a>2.2 DraweeHolder.getTopLevelDrawable()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="meta">@Nullable</span> <span class="function">Drawable <span class="title">getTopLevelDrawable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> mHierarchy == <span class="keyword">null</span> ? <span class="keyword">null</span> : mHierarchy.getTopLevelDrawable();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里mHierarchy是SettableDraweeHierarchy接口类型，实现类是GenericDraweeHierarchy，看下它的getTopLevelDrawable()实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Drawable <span class="title">getTopLevelDrawable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> mTopLevelDrawable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际上就只是返回mTopLevelDrawable，而mTopLevelDrawable是在GenericDraweeHierarchy构造方法中创建的，看下构造方法的整个创建过程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">GenericDraweeHierarchy(GenericDraweeHierarchyBuilder builder) &#123;</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.beginSection(<span class="string">&quot;GenericDraweeHierarchy()&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  mResources = builder.getResources();</span><br><span class="line">  mRoundingParams = builder.getRoundingParams();</span><br><span class="line"></span><br><span class="line">  mActualImageWrapper = <span class="keyword">new</span> ForwardingDrawable(mEmptyActualImageDrawable);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span> numOverlays = (builder.getOverlays() != <span class="keyword">null</span>) ? builder.getOverlays().size() : <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// make sure there is at least one overlay to make setOverlayImage(Drawable)</span></span><br><span class="line">  <span class="comment">// method work.</span></span><br><span class="line">  <span class="keyword">if</span> (numOverlays == <span class="number">0</span>) &#123;</span><br><span class="line">    numOverlays = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  numOverlays += (builder.getPressedStateOverlay() != <span class="keyword">null</span>) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// layer indices and count</span></span><br><span class="line">  <span class="keyword">int</span> numLayers = OVERLAY_IMAGES_INDEX + numOverlays;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// array of layers</span></span><br><span class="line">  Drawable[] layers = <span class="keyword">new</span> Drawable[numLayers];</span><br><span class="line">  layers[BACKGROUND_IMAGE_INDEX] = buildBranch(builder.getBackground(), <span class="keyword">null</span>);</span><br><span class="line">  layers[PLACEHOLDER_IMAGE_INDEX] =</span><br><span class="line">      buildBranch(builder.getPlaceholderImage(), builder.getPlaceholderImageScaleType());</span><br><span class="line">  layers[ACTUAL_IMAGE_INDEX] =</span><br><span class="line">      buildActualImageBranch(</span><br><span class="line">          mActualImageWrapper,</span><br><span class="line">          builder.getActualImageScaleType(),</span><br><span class="line">          builder.getActualImageFocusPoint(),</span><br><span class="line">          builder.getActualImageColorFilter());</span><br><span class="line">  layers[PROGRESS_BAR_IMAGE_INDEX] =</span><br><span class="line">      buildBranch(builder.getProgressBarImage(), builder.getProgressBarImageScaleType());</span><br><span class="line">  layers[RETRY_IMAGE_INDEX] =</span><br><span class="line">      buildBranch(builder.getRetryImage(), builder.getRetryImageScaleType());</span><br><span class="line">  layers[FAILURE_IMAGE_INDEX] =</span><br><span class="line">      buildBranch(builder.getFailureImage(), builder.getFailureImageScaleType());</span><br><span class="line">  <span class="keyword">if</span> (numOverlays &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (builder.getOverlays() != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">for</span> (Drawable overlay : builder.getOverlays()) &#123;</span><br><span class="line">        layers[OVERLAY_IMAGES_INDEX + index++] = buildBranch(overlay, <span class="keyword">null</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      index = <span class="number">1</span>; <span class="comment">// reserve space for one overlay</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (builder.getPressedStateOverlay() != <span class="keyword">null</span>) &#123;</span><br><span class="line">      layers[OVERLAY_IMAGES_INDEX + index] = buildBranch(builder.getPressedStateOverlay(), <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// fade drawable composed of layers</span></span><br><span class="line">  mFadeDrawable = <span class="keyword">new</span> FadeDrawable(layers, <span class="keyword">false</span>, ACTUAL_IMAGE_INDEX);</span><br><span class="line">  mFadeDrawable.setTransitionDuration(builder.getFadeDuration());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// rounded corners drawable (optional)</span></span><br><span class="line">  Drawable maybeRoundedDrawable =</span><br><span class="line">      WrappingUtils.maybeWrapWithRoundedOverlayColor(mFadeDrawable, mRoundingParams);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// top-level drawable</span></span><br><span class="line">  mTopLevelDrawable = <span class="keyword">new</span> RootDrawable(maybeRoundedDrawable);</span><br><span class="line">  mTopLevelDrawable.mutate();</span><br><span class="line"></span><br><span class="line">  resetFade();</span><br><span class="line">  <span class="keyword">if</span> (FrescoSystrace.isTracing()) &#123;</span><br><span class="line">    FrescoSystrace.endSection();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个构造方法看起来有点长，实际上分成以下几个部分比较好了解：</p>
+<ul>
+<li>创建一个名为layers的Drawable数组，在对应下标构建对应图层的Drawable，其中ACTUAL_IMAGE_INDEX这个常量对应的位置，是上面看到过的mActualImageWrapper</li>
+<li>其余图层分别是背景图、placeholder等等</li>
+<li>通过layers数组，构建出FadeDrawable的对象mFadeDrawable</li>
+<li>通过mFadeDrawable构建出maybeRoundedDrawable</li>
+<li>通过maybeRoundedDrawable构建出了mTopLevelDrawable<br>这个mTopLevelDrawable就是我们最终设置到图片控件ImageView的Drawble，它包含了多个图层，当我们把网络图片的uri设置进去的时候，取到真正网络图片时，会更新真实图片的图层，来实现UI的更新</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>Fresco提供了直接可用的UI控件</li>
+<li>Fresco的UI控件展示的实际上是一个多图层的Drawable，通过更新Drawble的图层来实现图片加载</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E6%A1%86%E6%9E%B6/" rel="tag"><i class="fa fa-tag"></i> 图片加载框架</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/05/07/Glide%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%BA%93%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/" rel="next" title="Glide图片加载库源码学习">
+                <i class="fa fa-chevron-left"></i> Glide图片加载库源码学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E7%94%A8%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">示例用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Fresco-initialize-Context-context"><span class="nav-number">3.</span> <span class="nav-text">1.Fresco.initialize(Context context)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-ImagePipelineFactory-initialize"><span class="nav-number">4.</span> <span class="nav-text">1.1 ImagePipelineFactory.initialize()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Fresco-initializeDrawee"><span class="nav-number">5.</span> <span class="nav-text">1.2 Fresco.initializeDrawee()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-SimpleDraweeView-setImageURI-uri"><span class="nav-number">6.</span> <span class="nav-text">2. SimpleDraweeView.setImageURI(uri)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-DraweeHolder-setController"><span class="nav-number">7.</span> <span class="nav-text">2.1 DraweeHolder.setController()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-1-PipelineDraweeController-getCachedImage"><span class="nav-number">8.</span> <span class="nav-text">2.1.1 PipelineDraweeController.getCachedImage()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-PipelineDraweeController-getDataSource"><span class="nav-number">9.</span> <span class="nav-text">2.1.2 PipelineDraweeController.getDataSource()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-1-ImagePipeline-fetchDecodedImage"><span class="nav-number">10.</span> <span class="nav-text">2.1.2.1 ImagePipeline.fetchDecodedImage()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-2-Producer-produceResults"><span class="nav-number">11.</span> <span class="nav-text">2.1.2.2 Producer.produceResults()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-3-AbstractProducerToDataSourceAdapter-createConsumer"><span class="nav-number">12.</span> <span class="nav-text">2.1.2.3 AbstractProducerToDataSourceAdapter.createConsumer()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-3-DataSource-subscribe-final-DataSubscriber-lt-T-gt-dataSubscriber-final-Executor-executor"><span class="nav-number">13.</span> <span class="nav-text">2.1.3   DataSource.subscribe(final DataSubscriber&lt;T&gt; dataSubscriber, final Executor executor)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-DraweeHolder-getTopLevelDrawable"><span class="nav-number">14.</span> <span class="nav-text">2.2 DraweeHolder.getTopLevelDrawable()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">15.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChrisChan</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">52k</span>
+  
+</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
